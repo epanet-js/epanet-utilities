@@ -28,14 +28,14 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
 }) => {
   const allCompleted =
     progressSteps.length > 0 &&
-    progressSteps.every((step) => step.status === "completed");
+    progressSteps.every((step: ProgressStep) => step.status === "completed");
 
   return (
     <Modal open={open} onOpenChange={onClose} title="Building EPANET Model">
       <div className="space-y-4">
         {/* Progress List */}
         <ul className="space-y-2">
-          {progressSteps.map((step) => {
+          {progressSteps.map((step: ProgressStep) => {
             let icon = <Circle className="h-4 w-4 text-slate-400" />;
             let textClass = "text-slate-500";
 

@@ -160,13 +160,15 @@ const ModelBuilderPage = () => {
     elementType: EpanetElementType,
   ) => {
     // Add the file to assigned data
-    setAssignedGisData((prev) => ({
+    setAssignedGisData((prev: AssignedGisData) => ({
       ...prev,
       [elementType]: file.geoJSON,
     }));
 
     // Remove the file from uploaded files
-    setUploadedFiles((prev) => prev.filter((f) => f.id !== file.id));
+    setUploadedFiles((prev: UploadedFile[]) =>
+      prev.filter((f: UploadedFile) => f.id !== file.id),
+    );
 
     // Initialize attribute mapping for this element type
     const element = EPANET_ELEMENTS.find((e) => e.key === elementType);
@@ -180,7 +182,7 @@ const ModelBuilderPage = () => {
         return acc;
       }, {} as Record<string, string | null>);
 
-      setAttributeMapping((prev) => ({
+      setAttributeMapping((prev: AttributeMapping) => ({
         ...prev,
         [elementType]: initialMapping,
       }));
@@ -208,17 +210,17 @@ const ModelBuilderPage = () => {
         featureCount: assignedFile.features.length,
       };
 
-      setUploadedFiles((prev) => [...prev, newFile]);
+      setUploadedFiles((prev: UploadedFile[]) => [...prev, newFile]);
 
       // Remove from assigned data
-      setAssignedGisData((prev) => {
+      setAssignedGisData((prev: AssignedGisData) => {
         const newAssigned = { ...prev };
         delete newAssigned[elementType];
         return newAssigned;
       });
 
       // Remove from attribute mapping
-      setAttributeMapping((prev) => {
+      setAttributeMapping((prev: AttributeMapping) => {
         const newMapping = { ...prev };
         delete newMapping[elementType];
         return newMapping;
@@ -236,7 +238,7 @@ const ModelBuilderPage = () => {
     attribute: string,
     propertyName: string | null,
   ) => {
-    setAttributeMapping((prev) => ({
+    setAttributeMapping((prev: AttributeMapping) => ({
       ...prev,
       [elementType]: {
         ...prev[elementType],
