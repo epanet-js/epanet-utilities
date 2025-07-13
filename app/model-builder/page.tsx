@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import type {
@@ -17,6 +17,7 @@ import { isLikelyLatLng } from "@/lib/check-projection";
 // Import components (we'll create these)
 import { DataAssignmentStep } from "@/components/model-builder/data-assignment-step";
 import { AttributeMappingStep } from "@/components/model-builder/attribute-mapping-step";
+import { BuildProgressModal } from "@/components/model-builder/BuildProgressModal";
 
 const ModelBuilderPage = () => {
   // State management
@@ -27,6 +28,78 @@ const ModelBuilderPage = () => {
   const [attributeMapping, setAttributeMapping] = useState<AttributeMapping>(
     {},
   );
+
+  // Build process state
+  const [isBuilding, setIsBuilding] = useState<boolean>(false);
+  type ProgressStep = {
+    name: string;
+    status: "pending" | "inProgress" | "completed";
+  };
+
+  const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([]);
+  const [inpContent, setInpContent] = useState<string>("");
+  const [buildError, setBuildError] = useState<string>("");
+
+  // Web Worker reference
+  const workerRef = useRef<Worker | null>(null);
+
+  // Instantiate web worker once on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Dynamically create the worker. Using relative path so that bundler can resolve it.
+    workerRef.current = new Worker(
+      new URL("../../lib/workers/model-builder-worker.ts", import.meta.url),
+      { type: "module" },
+    );
+
+    workerRef.current.onmessage = (event: MessageEvent) => {
+      const data = event.data as {
+        type: string;
+        task?: string;
+        inpFile?: string;
+        message?: string;
+      };
+
+      if (data.type === "progress" && data.task) {
+        setProgressSteps((prev: ProgressStep[]) => {
+          // Mark current inProgress as completed and set the new task to inProgress
+          return prev.map((step: ProgressStep) => {
+            if (step.name === data.task) {
+              return { ...step, status: "inProgress" };
+            }
+            if (step.status === "inProgress") {
+              return { ...step, status: "completed" };
+            }
+            return step;
+          });
+        });
+      } else if (data.type === "complete" && data.inpFile) {
+        setProgressSteps((prev: ProgressStep[]) =>
+          prev.map((step: ProgressStep) =>
+            step.status === "inProgress"
+              ? { ...step, status: "completed" }
+              : step,
+          ),
+        );
+        setInpContent(data.inpFile);
+        setIsBuilding(false);
+      } else if (data.type === "error") {
+        setBuildError(data.message || "Unknown error");
+        setIsBuilding(false);
+      }
+    };
+
+    workerRef.current.onerror = (err: ErrorEvent) => {
+      setBuildError(err.message);
+      setIsBuilding(false);
+    };
+
+    return () => {
+      workerRef.current?.terminate();
+      workerRef.current = null;
+    };
+  }, []);
 
   // Projection state
   const [projections, setProjections] = useState<Projection[]>([]);
@@ -87,13 +160,15 @@ const ModelBuilderPage = () => {
     elementType: EpanetElementType,
   ) => {
     // Add the file to assigned data
-    setAssignedGisData((prev) => ({
+    setAssignedGisData((prev: AssignedGisData) => ({
       ...prev,
       [elementType]: file.geoJSON,
     }));
 
     // Remove the file from uploaded files
-    setUploadedFiles((prev) => prev.filter((f) => f.id !== file.id));
+    setUploadedFiles((prev: UploadedFile[]) =>
+      prev.filter((f: UploadedFile) => f.id !== file.id),
+    );
 
     // Initialize attribute mapping for this element type
     const element = EPANET_ELEMENTS.find((e) => e.key === elementType);
@@ -107,7 +182,7 @@ const ModelBuilderPage = () => {
         return acc;
       }, {} as Record<string, string | null>);
 
-      setAttributeMapping((prev) => ({
+      setAttributeMapping((prev: AttributeMapping) => ({
         ...prev,
         [elementType]: initialMapping,
       }));
@@ -135,17 +210,17 @@ const ModelBuilderPage = () => {
         featureCount: assignedFile.features.length,
       };
 
-      setUploadedFiles((prev) => [...prev, newFile]);
+      setUploadedFiles((prev: UploadedFile[]) => [...prev, newFile]);
 
       // Remove from assigned data
-      setAssignedGisData((prev) => {
+      setAssignedGisData((prev: AssignedGisData) => {
         const newAssigned = { ...prev };
         delete newAssigned[elementType];
         return newAssigned;
       });
 
       // Remove from attribute mapping
-      setAttributeMapping((prev) => {
+      setAttributeMapping((prev: AttributeMapping) => {
         const newMapping = { ...prev };
         delete newMapping[elementType];
         return newMapping;
@@ -163,7 +238,7 @@ const ModelBuilderPage = () => {
     attribute: string,
     propertyName: string | null,
   ) => {
-    setAttributeMapping((prev) => ({
+    setAttributeMapping((prev: AttributeMapping) => ({
       ...prev,
       [elementType]: {
         ...prev[elementType],
@@ -211,7 +286,7 @@ const ModelBuilderPage = () => {
   };
 
   const handleBuildModel = () => {
-    // Create the final configuration object
+    // Prepare configuration object (sent to worker if needed)
     const config = {
       assignedData: assignedGisData,
       attributeMapping,
@@ -227,30 +302,65 @@ const ModelBuilderPage = () => {
       },
     };
 
-    // Download the configuration as JSON
-    const blob = new Blob([JSON.stringify(config, null, 2)], {
-      type: "application/json",
-    });
+    // Define the list of tasks for UI
+    const tasks = [
+      "Reading Build Config",
+      "Validating Data",
+      "Converting MultiString Geometry",
+      "Simplifying Crossings",
+      "Building Network Graph",
+      "Calculating Connectivity",
+      "Assigning Elevations",
+      "Generating INP File",
+      "Finished Build",
+    ];
+
+    setProgressSteps(
+      tasks.map((name, idx) => ({
+        name,
+        status: idx === 0 ? "inProgress" : "pending",
+      })),
+    );
+    setIsBuilding(true);
+    setInpContent("");
+    setBuildError("");
+
+    // Kick off the worker
+    workerRef.current?.postMessage(config);
+  };
+
+  const handleDownloadInp = () => {
+    if (!inpContent) return;
+
+    const blob = new Blob([inpContent], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `epanet-model-config-${
-      new Date().toISOString().split("T")[0]
-    }.json`;
+    a.download = `epanet-model-${new Date().toISOString().split("T")[0]}.inp`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
-    toast({
-      title: "🎉 Model Configuration Generated",
-      description: "Your EPANET model configuration has been downloaded.",
-    });
   };
 
   return (
     <main className="container mx-auto px-4 py-8">
       <Toaster />
+
+      {/* Build Progress Modal */}
+      <BuildProgressModal
+        open={isBuilding || !!buildError || !!inpContent}
+        progressSteps={progressSteps}
+        error={buildError || undefined}
+        onDownload={inpContent ? handleDownloadInp : undefined}
+        onClose={() => {
+          if (!isBuilding) {
+            setBuildError("");
+            setInpContent("");
+            setProgressSteps([]);
+          }
+        }}
+      />
 
       <header className="mb-12 text-center">
         <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-3">
