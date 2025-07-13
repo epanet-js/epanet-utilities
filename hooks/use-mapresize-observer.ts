@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 
 export function useMapResizeObserver(
-  mapRef: React.RefObject<mapboxgl.Map>,
-  mapContainerRef: React.RefObject<HTMLDivElement>
+  mapRef: React.RefObject<mapboxgl.Map | null>,
+  mapContainerRef: React.RefObject<HTMLDivElement | null>
 ) {
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
