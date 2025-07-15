@@ -31,8 +31,7 @@ export default function Home() {
   const [targetProjection, setTargetProjection] = useState<Projection | null>(
     null,
   );
-  const [convertedCoordinates, setConvertedCoordinates] =
-    useState<NetworkData | null>(null);
+
   const [mapData, setMapData] = useState<FeatureCollection<
     Geometry,
     GeoJsonProperties
@@ -87,7 +86,6 @@ export default function Home() {
       // Clear map data if no file is selected
       if (!data || !file) {
         setMapData(null);
-        setConvertedCoordinates(null);
         setSourceProjection(null);
         setTargetProjection(null);
         return;
@@ -97,7 +95,6 @@ export default function Home() {
       // Handle error appropriately (e.g., show error message to user)
       setNetworkData(null);
       setMapData(null);
-      setConvertedCoordinates(null);
     }
   };
 
@@ -125,16 +122,43 @@ export default function Home() {
     setTargetProjection(projection);
   };
 
-  const handleConvert = () => {
+  const handleDownloadConverted = () => {
     if (!networkData || !sourceProjection || !targetProjection) return;
 
     try {
+      // First, convert the coordinates
       const convertedNetworkData = convertCoordinates(
         networkData,
         sourceProjection.code,
         targetProjection.code,
       );
-      setConvertedCoordinates(convertedNetworkData);
+
+      // Then immediately download the converted file
+      const isLatLng = targetProjection.id === "EPSG:4326";
+      const numberOfDecimals = isLatLng ? 6 : 2;
+
+      // Generate new INP file with reprojected coordinates
+      const newContent = updateINPWithReprojectedData(
+        networkData.inp,
+        convertedNetworkData,
+        numberOfDecimals,
+      );
+
+      // Create and trigger download
+      const blob = new Blob([newContent], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      //networkdata.name ends with .inp revove that and add [targetProjection.id] to the end
+
+      const trimmedName = networkData.name.endsWith(".inp")
+        ? networkData.name.slice(0, -4)
+        : networkData.name;
+      a.download = `${trimmedName}-[${targetProjection.id}].inp`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error converting coordinates:", error);
 
@@ -143,44 +167,7 @@ export default function Home() {
         description: `Error converting coordinates to ${targetProjection.name} \n ${error}`,
         variant: "destructive",
       });
-      setConvertedCoordinates(null);
     }
-  };
-
-  const handleDownload = () => {
-    if (
-      !networkData ||
-      !sourceProjection ||
-      !targetProjection ||
-      !convertedCoordinates
-    )
-      return;
-
-    const isLatLng = targetProjection.id === "EPSG:4326";
-    const numberOfDecimals = isLatLng ? 6 : 2;
-
-    // Generate new INP file with reprojected coordinates
-    const newContent = updateINPWithReprojectedData(
-      networkData.inp,
-      convertedCoordinates,
-      numberOfDecimals,
-    );
-
-    // Create and trigger download
-    const blob = new Blob([newContent], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    //networkdata.name ends with .inp revove that and add [targetProjection.id] to the end
-
-    const trimmedName = networkData.name.endsWith(".inp")
-      ? networkData.name.slice(0, -4)
-      : networkData.name;
-    a.download = `${trimmedName}-[${targetProjection.id}].inp`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
   return (
@@ -208,10 +195,8 @@ export default function Home() {
               targetProjection={targetProjection}
               onSourceChange={handleSourceProjectionChange}
               onTargetChange={handleTargetProjectionChange}
-              onConvert={handleConvert}
-              onDownload={handleDownload}
+              onDownloadConverted={handleDownloadConverted}
               canConvert={!!networkData}
-              hasConverted={!!convertedCoordinates}
               projections={projections}
               loadingProjections={loadingProjections}
             />

@@ -9,10 +9,8 @@ interface ProjectionConverterProps {
   targetProjection: Projection | null;
   onSourceChange: (projection: Projection | null) => void;
   onTargetChange: (projection: Projection | null) => void;
-  onConvert: () => void;
-  onDownload: () => void;
+  onDownloadConverted: () => void;
   canConvert: boolean;
-  hasConverted: boolean;
   projections: Projection[];
   loadingProjections: boolean;
 }
@@ -22,10 +20,8 @@ export function ProjectionConverter({
   targetProjection,
   onSourceChange,
   onTargetChange,
-  onConvert,
-  onDownload,
+  onDownloadConverted,
   canConvert,
-  hasConverted,
   projections,
   loadingProjections,
 }: ProjectionConverterProps) {
@@ -63,28 +59,19 @@ export function ProjectionConverter({
         />
       </div>
 
-      <div className="pt-4 space-y-3">
+      <div className="pt-4">
         <button
-          onClick={onConvert}
+          onClick={onDownloadConverted}
           disabled={!canConvert || !sourceProjection || !targetProjection}
           className={`w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white ${
             !canConvert || !sourceProjection || !targetProjection
               ? "bg-slate-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              : "bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           }`}
         >
-          Convert Projection
+          <Download className="h-4 w-4 mr-2" />
+          Download Converted Model
         </button>
-
-        {hasConverted && (
-          <button
-            onClick={onDownload}
-            className="w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Download Converted File
-          </button>
-        )}
       </div>
     </div>
   );
