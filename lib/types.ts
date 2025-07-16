@@ -16,9 +16,15 @@ export interface Projection {
 }
 
 // Model Builder Types
-export type ModelBuilderStep = 'dataAssignment' | 'attributeMapping';
+export type ModelBuilderStep = "dataAssignment" | "attributeMapping";
 
-export type EpanetElementType = 'pipes' | 'valves' | 'nodes' | 'pumps' | 'tanks' | 'reservoirs';
+export type EpanetElementType =
+  | "pipes"
+  | "valves"
+  | "nodes"
+  | "pumps"
+  | "tanks"
+  | "reservoirs";
 
 export interface UploadedFile {
   id: string;
@@ -37,6 +43,11 @@ export interface AssignedGisData {
   tanks?: FeatureCollection;
   reservoirs?: FeatureCollection;
 }
+
+// Mapping from element type to the full uploaded file (keeps filename etc.)
+export type AssignedFileInfo = {
+  [K in EpanetElementType]?: UploadedFile;
+};
 
 export interface AttributeMapping {
   [elementType: string]: {

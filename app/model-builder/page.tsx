@@ -10,6 +10,7 @@ import type {
   AttributeMapping,
   EpanetElementType,
   Projection,
+  AssignedFileInfo,
 } from "@/lib/types";
 import { EPANET_ELEMENTS } from "@/lib/model-builder-constants";
 import { isLikelyLatLng } from "@/lib/check-projection";
@@ -26,6 +27,11 @@ const ModelBuilderPage = () => {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [assignedGisData, setAssignedGisData] = useState<AssignedGisData>({});
   const [attributeMapping, setAttributeMapping] = useState<AttributeMapping>(
+    {},
+  );
+
+  // Keep info about which UploadedFile was assigned to each element type
+  const [assignedFileInfo, setAssignedFileInfo] = useState<AssignedFileInfo>(
     {},
   );
 
@@ -159,10 +165,15 @@ const ModelBuilderPage = () => {
     file: UploadedFile,
     elementType: EpanetElementType,
   ) => {
-    // Add the file to assigned data
+    // Add the file to assigned data & file info
     setAssignedGisData((prev: AssignedGisData) => ({
       ...prev,
       [elementType]: file.geoJSON,
+    }));
+
+    setAssignedFileInfo((prev: AssignedFileInfo) => ({
+      ...prev,
+      [elementType]: file,
     }));
 
     // Remove the file from uploaded files
@@ -197,26 +208,39 @@ const ModelBuilderPage = () => {
   const handleFileUnassignment = (elementType: EpanetElementType) => {
     const assignedFile = assignedGisData[elementType];
     if (assignedFile) {
-      // Find the original file info or create a new one
-      const fileName = `${elementType}_data.geojson`;
-      const newFile: UploadedFile = {
-        id: `unassigned_${elementType}_${Date.now()}`,
-        file: new File([JSON.stringify(assignedFile)], fileName, {
-          type: "application/json",
-        }),
-        geoJSON: assignedFile,
-        name: fileName,
-        geometryType: assignedFile.features[0]?.geometry?.type || "Unknown",
-        featureCount: assignedFile.features.length,
-      };
+      // Retrieve the original uploaded file if we have it stored
+      const originalFile = assignedFileInfo[elementType];
 
-      setUploadedFiles((prev: UploadedFile[]) => [...prev, newFile]);
+      if (originalFile) {
+        setUploadedFiles((prev: UploadedFile[]) => [...prev, originalFile]);
+      } else {
+        // Fallback: create a placeholder file if original not found (should not happen)
+        const fileName = `${elementType}_data.geojson`;
+        const newFile: UploadedFile = {
+          id: `unassigned_${elementType}_${Date.now()}`,
+          file: new File([JSON.stringify(assignedFile)], fileName, {
+            type: "application/json",
+          }),
+          geoJSON: assignedFile,
+          name: fileName,
+          geometryType: assignedFile.features[0]?.geometry?.type || "Unknown",
+          featureCount: assignedFile.features.length,
+        };
 
-      // Remove from assigned data
+        setUploadedFiles((prev: UploadedFile[]) => [...prev, newFile]);
+      }
+
+      // Remove from assigned data and file info
       setAssignedGisData((prev: AssignedGisData) => {
         const newAssigned = { ...prev };
         delete newAssigned[elementType];
         return newAssigned;
+      });
+
+      setAssignedFileInfo((prev: AssignedFileInfo) => {
+        const newInfo = { ...prev };
+        delete newInfo[elementType];
+        return newInfo;
       });
 
       // Remove from attribute mapping
@@ -427,6 +451,7 @@ const ModelBuilderPage = () => {
         <DataAssignmentStep
           uploadedFiles={uploadedFiles}
           assignedGisData={assignedGisData}
+          assignedFileInfo={assignedFileInfo}
           onFilesUploaded={handleFilesUploaded}
           onFileAssignment={handleFileAssignment}
           onFileUnassignment={handleFileUnassignment}

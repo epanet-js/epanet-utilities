@@ -5,6 +5,7 @@ import { Upload, FileText, AlertCircle, X, ChevronDown } from "lucide-react";
 import type {
   UploadedFile,
   AssignedGisData,
+  AssignedFileInfo,
   EpanetElementType,
 } from "@/lib/types";
 import { getValidGeometryType } from "@/lib/model-builder-constants";
@@ -18,6 +19,7 @@ interface MultiFileDropzoneProps {
   onFilesLoaded: (files: UploadedFile[]) => void;
   uploadedFiles: UploadedFile[];
   assignedGisData: AssignedGisData;
+  assignedFileInfo: AssignedFileInfo;
   onFileAssignment: (
     file: UploadedFile,
     elementType: EpanetElementType,
@@ -29,6 +31,7 @@ export function MultiFileDropzone({
   onFilesLoaded,
   uploadedFiles,
   assignedGisData,
+  assignedFileInfo,
   onFileAssignment,
   onFileUnassignment,
 }: MultiFileDropzoneProps) {
@@ -36,15 +39,24 @@ export function MultiFileDropzone({
   const [isProcessing, setIsProcessing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Keep track of filenames for assigned elements so we can display them
-  const [assignedFileNames, setAssignedFileNames] = useState<
-    Record<string, string>
-  >({});
+  // No local state for filenames; rely on prop
 
   // Global drop handlers so files can be dropped anywhere on the page
   useEffect(() => {
+    const handleWindowDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+    };
+
     const handleWindowDragOver = (e: DragEvent) => {
       e.preventDefault();
+    };
+
+    const handleWindowDragLeave = (e: DragEvent) => {
+      // When leaving window (relatedTarget is null)
+      if (!e.relatedTarget || (e as any).screenX === 0) {
+        setIsDragging(false);
+      }
     };
 
     const handleWindowDrop = (e: DragEvent) => {
@@ -53,13 +65,18 @@ export function MultiFileDropzone({
       if (files.length > 0) {
         processFiles(files);
       }
+      setIsDragging(false);
     };
 
+    window.addEventListener("dragenter", handleWindowDragEnter);
     window.addEventListener("dragover", handleWindowDragOver);
+    window.addEventListener("dragleave", handleWindowDragLeave);
     window.addEventListener("drop", handleWindowDrop);
 
     return () => {
+      window.removeEventListener("dragenter", handleWindowDragEnter);
       window.removeEventListener("dragover", handleWindowDragOver);
+      window.removeEventListener("dragleave", handleWindowDragLeave);
       window.removeEventListener("drop", handleWindowDrop);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -155,11 +172,7 @@ export function MultiFileDropzone({
     if (fileToAssign) {
       onFileAssignment(fileToAssign, elementType);
 
-      // Track filename for display in assigned list
-      setAssignedFileNames((prev) => ({
-        ...prev,
-        [elementType]: fileToAssign.name,
-      }));
+      // No local state for filenames; rely on prop
     }
   };
 
@@ -171,6 +184,9 @@ export function MultiFileDropzone({
 
   return (
     <div className="flex flex-col h-full">
+      {isDragging && (
+        <div className="fixed inset-0 z-40 pointer-events-none border-4 border-blue-500 border-dashed rounded-lg opacity-50" />
+      )}
       {/* File Upload Area / Drop Zone */}
       {showInitialDropZone ? (
         <div
@@ -295,7 +311,8 @@ export function MultiFileDropzone({
                         {element.name}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                        {assignedFileNames[elementType] || "(unknown filename)"}
+                        {assignedFileInfo[elementType]?.name ||
+                          "(unknown filename)"}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {geoJSON.features[0]?.geometry?.type} •{" "}
@@ -305,10 +322,6 @@ export function MultiFileDropzone({
                     <button
                       onClick={() => {
                         onFileUnassignment(elementType);
-                        setAssignedFileNames((prev) => {
-                          const { [elementType]: _removed, ...rest } = prev;
-                          return rest;
-                        });
                       }}
                       className="ml-4 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex-shrink-0"
                       aria-label="Unassign file"

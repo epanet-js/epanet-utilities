@@ -4,13 +4,10 @@ import { ChevronRight } from "lucide-react";
 import type {
   UploadedFile,
   AssignedGisData,
+  AssignedFileInfo,
   EpanetElementType,
   Projection,
 } from "@/lib/types";
-import {
-  EPANET_ELEMENTS,
-  isValidGeometryForElement,
-} from "@/lib/model-builder-constants";
 import { MultiFileDropzone } from "./multi-file-dropzone";
 import { ModelBuilderMap } from "./model-builder-map";
 import { ProjectionInputSearch } from "@/components/projection-input-search";
@@ -18,6 +15,7 @@ import { ProjectionInputSearch } from "@/components/projection-input-search";
 interface DataAssignmentStepProps {
   uploadedFiles: UploadedFile[];
   assignedGisData: AssignedGisData;
+  assignedFileInfo: AssignedFileInfo;
   onFilesUploaded: (files: UploadedFile[]) => void;
   onFileAssignment: (
     file: UploadedFile,
@@ -35,6 +33,7 @@ interface DataAssignmentStepProps {
 export function DataAssignmentStep({
   uploadedFiles,
   assignedGisData,
+  assignedFileInfo,
   onFilesUploaded,
   onFileAssignment,
   onFileUnassignment,
@@ -58,6 +57,7 @@ export function DataAssignmentStep({
               onFilesLoaded={onFilesUploaded}
               uploadedFiles={uploadedFiles}
               assignedGisData={assignedGisData}
+              assignedFileInfo={assignedFileInfo}
               onFileAssignment={onFileAssignment}
               onFileUnassignment={onFileUnassignment}
             />
