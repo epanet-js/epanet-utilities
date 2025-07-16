@@ -43,7 +43,7 @@ self.addEventListener("message", async (event: MessageEvent) => {
       postMessage({ type: "progress", task } satisfies ProgressMessage);
 
       // Simulate task taking between 1–3 seconds
-      await sleep(1000 + Math.random() * 2000);
+      await sleep(250 + Math.random() * 500);
     }
 
     // Dummy INP content after successful build

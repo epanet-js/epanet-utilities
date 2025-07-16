@@ -266,7 +266,7 @@ export function MultiFileDropzone({
           >
             <Upload className="h-4 w-4" />
             <span>
-              {isProcessing ? "Processing..." : "Add / Replace GeoJSON Files"}
+              {isProcessing ? "Processing..." : "Add more GeoJSON files"}
             </span>
           </label>
           {error && (

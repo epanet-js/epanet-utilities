@@ -377,6 +377,7 @@ const ModelBuilderPage = () => {
         progressSteps={progressSteps}
         error={buildError || undefined}
         onDownload={inpContent ? handleDownloadInp : undefined}
+        showCloseButton={isBuilding ? false : true}
         onClose={() => {
           if (!isBuilding) {
             setBuildError("");

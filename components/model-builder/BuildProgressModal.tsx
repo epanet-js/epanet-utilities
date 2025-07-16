@@ -17,6 +17,7 @@ interface BuildProgressModalProps {
   error?: string | null;
   onDownload?: () => void;
   onClose?: () => void;
+  showCloseButton?: boolean;
 }
 
 export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
@@ -25,13 +26,19 @@ export const BuildProgressModal: React.FC<BuildProgressModalProps> = ({
   error,
   onDownload,
   onClose,
+  showCloseButton = true,
 }) => {
   const allCompleted =
     progressSteps.length > 0 &&
     progressSteps.every((step: ProgressStep) => step.status === "completed");
 
   return (
-    <Modal open={open} onOpenChange={onClose} title="Building EPANET Model">
+    <Modal
+      open={open}
+      onOpenChange={onClose}
+      title="Building EPANET Model"
+      showCloseButton={showCloseButton}
+    >
       <div className="space-y-4">
         {/* Progress List */}
         <ul className="space-y-2">
