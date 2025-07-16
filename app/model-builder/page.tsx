@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import type {
@@ -23,9 +24,62 @@ import { ModelSettingsStep } from "@/components/model-builder/model-settings-ste
 import { BuildProgressModal } from "@/components/model-builder/BuildProgressModal";
 
 const ModelBuilderPage = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Get initial step from URL, fallback to "modelSettings"
+  const getInitialStep = (): ModelBuilderStep => {
+    const stepFromUrl = searchParams.get("step") as ModelBuilderStep;
+    const validSteps: ModelBuilderStep[] = [
+      "modelSettings",
+      "dataAssignment",
+      "attributeMapping",
+    ];
+    return validSteps.includes(stepFromUrl) ? stepFromUrl : "modelSettings";
+  };
+
   // State management
-  const [currentStep, setCurrentStep] =
-    useState<ModelBuilderStep>("modelSettings");
+  const [currentStep, setCurrentStep] = useState<ModelBuilderStep>(
+    getInitialStep(),
+  );
+
+  // Update URL when step changes
+  const updateStepInUrl = (step: ModelBuilderStep) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("step", step);
+    router.push(`?${params.toString()}`, { scroll: false });
+    setCurrentStep(step);
+  };
+
+  // Listen for browser navigation (back/forward)
+  useEffect(() => {
+    const handlePopState = () => {
+      const stepFromUrl = new URLSearchParams(window.location.search).get(
+        "step",
+      ) as ModelBuilderStep;
+      const validSteps: ModelBuilderStep[] = [
+        "modelSettings",
+        "dataAssignment",
+        "attributeMapping",
+      ];
+      const validStep = validSteps.includes(stepFromUrl)
+        ? stepFromUrl
+        : "modelSettings";
+      setCurrentStep(validStep);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // Initialize URL if not present
+  useEffect(() => {
+    if (!searchParams.get("step")) {
+      const params = new URLSearchParams(searchParams);
+      params.set("step", "modelSettings");
+      router.replace(`?${params.toString()}`, { scroll: false });
+    }
+  }, [searchParams, router]);
 
   const [modelSettings, setModelSettings] = useState<ModelSettings>({
     flowUnit: "GPM",
@@ -280,7 +334,7 @@ const ModelBuilderPage = () => {
 
   const handleNextStep = () => {
     if (currentStep === "modelSettings") {
-      setCurrentStep("dataAssignment");
+      updateStepInUrl("dataAssignment");
       return;
     }
 
@@ -311,15 +365,15 @@ const ModelBuilderPage = () => {
         return;
       }
 
-      setCurrentStep("attributeMapping");
+      updateStepInUrl("attributeMapping");
     }
   };
 
   const handlePreviousStep = () => {
     if (currentStep === "attributeMapping") {
-      setCurrentStep("dataAssignment");
+      updateStepInUrl("dataAssignment");
     } else if (currentStep === "dataAssignment") {
-      setCurrentStep("modelSettings");
+      updateStepInUrl("modelSettings");
     }
   };
 

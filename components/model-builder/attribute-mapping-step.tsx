@@ -51,8 +51,14 @@ export function AttributeMappingStep({
     return (
       <div className="text-center py-12">
         <p className="text-slate-500 dark:text-slate-400">
-          No elements have been assigned. Please go back and assign files to
-          elements.
+          No elements have been assigned. Please{" "}
+          <a
+            href="/model-builder?step=dataAssignment"
+            className="text-blue-500 hover:text-blue-600 underline"
+          >
+            go back
+          </a>{" "}
+          and assign files to elements.
         </p>
       </div>
     );
