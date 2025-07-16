@@ -101,6 +101,7 @@ export function DataAssignmentStep({
           <ModelBuilderMap
             assignedGisData={assignedGisData}
             selectedProjection={selectedProjection}
+            unassignedFiles={uploadedFiles}
           />
         </div>
       </div>

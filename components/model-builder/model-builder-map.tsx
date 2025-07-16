@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useMapResizeObserver } from "@/hooks/use-mapresize-observer";
-import type { AssignedGisData, Projection } from "@/lib/types";
+import type { AssignedGisData, Projection, UploadedFile } from "@/lib/types";
 import { ELEMENT_COLORS } from "@/lib/model-builder-constants";
 import { isLikelyLatLng } from "@/lib/check-projection";
 import { approximateReprojectToLatLng } from "@/lib/approx-reproject";
@@ -15,11 +15,18 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 interface ModelBuilderMapProps {
   assignedGisData: AssignedGisData;
   selectedProjection?: Projection | null;
+  /**
+   * Files that have been uploaded but not yet assigned to an EPANET element.
+   * These will be rendered on the map in a neutral grey colour so the user can
+   * still see their location while mapping the data.
+   */
+  unassignedFiles?: UploadedFile[];
 }
 
 export function ModelBuilderMap({
   assignedGisData,
   selectedProjection,
+  unassignedFiles = [],
 }: ModelBuilderMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -62,19 +69,46 @@ export function ModelBuilderMap({
     if (!map.current || !mapLoaded) return;
 
     // Remove existing layers and sources
+    // Remove previously-added assigned layers
     Object.keys(ELEMENT_COLORS).forEach((elementType) => {
-      if (map.current!.getLayer(`${elementType}-points`)) {
-        map.current!.removeLayer(`${elementType}-points`);
-      }
-      if (map.current!.getLayer(`${elementType}-lines`)) {
-        map.current!.removeLayer(`${elementType}-lines`);
-      }
+      ["points", "lines"].forEach((suffix) => {
+        const layerId = `${elementType}-${suffix}`;
+        if (map.current!.getLayer(layerId)) {
+          map.current!.removeLayer(layerId);
+        }
+      });
       if (map.current!.getSource(elementType)) {
         map.current!.removeSource(elementType);
       }
     });
 
-    const hasData = Object.keys(assignedGisData).length > 0;
+    // Remove previously-added unassigned layers & sources
+    const currentStyle = map.current!.getStyle();
+    if (!currentStyle) return;
+
+    (currentStyle.layers ?? []).forEach((layer: any) => {
+      if (!layer || !layer.id) return;
+      if ((layer.id as string).startsWith("unassigned-")) {
+        try {
+          map.current!.removeLayer(layer.id);
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+
+    Object.keys(currentStyle.sources ?? {}).forEach((sourceId) => {
+      if (sourceId.startsWith("unassigned-")) {
+        try {
+          map.current!.removeSource(sourceId);
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+
+    const hasData =
+      Object.keys(assignedGisData).length > 0 || unassignedFiles.length > 0;
 
     if (!hasData) {
       setTimeout(() => {
@@ -88,21 +122,26 @@ export function ModelBuilderMap({
       return;
     }
 
-    // Process all GeoJSON data for reprojection
-    const geoJSONEntries = Object.entries(assignedGisData);
-    const geoJSONArray = geoJSONEntries.map(([, geoJSON]) => geoJSON);
+    // Prepare GeoJSON arrays for both assigned and unassigned data
+    const assignedEntries = Object.entries(assignedGisData);
+    const unassignedGeoArray = unassignedFiles.map((f) => f.geoJSON);
+
+    const combinedGeoArray = [
+      ...assignedEntries.map(([, geoJSON]) => geoJSON),
+      ...unassignedGeoArray,
+    ];
 
     // Check if any data needs reprojection
-    const needsReprojection = geoJSONArray.some(
+    const needsReprojection = combinedGeoArray.some(
       (geoJSON) => geoJSON && !isLikelyLatLng(geoJSON),
     );
 
-    let processedGeoJSONArray: (typeof geoJSONArray)[0][];
+    let processedCombinedArray: (typeof combinedGeoArray)[0][];
 
     if (needsReprojection) {
       if (selectedProjection && selectedProjection.id !== "EPSG:4326") {
         // Use precise projection when available
-        processedGeoJSONArray = geoJSONArray.map((geoJSON) => {
+        processedCombinedArray = combinedGeoArray.map((geoJSON) => {
           if (!geoJSON) return null;
           try {
             const reprojected = convertGeoJsonToWGS84Generic(
@@ -120,21 +159,28 @@ export function ModelBuilderMap({
         });
       } else {
         // Fallback to approximate reprojection when no projection is selected
-        processedGeoJSONArray = approximateReprojectToLatLng(geoJSONArray);
+        processedCombinedArray = approximateReprojectToLatLng(combinedGeoArray);
       }
     } else {
       // No reprojection needed, use original data
-      processedGeoJSONArray = geoJSONArray;
+      processedCombinedArray = combinedGeoArray;
     }
 
-    // Create a map from element type to processed GeoJSON
-    const processedGeoJSONMap = geoJSONEntries.reduce(
-      (acc, [elementType], index) => {
-        acc[elementType] = processedGeoJSONArray[index];
+    // Split processedCombinedArray back into assigned and unassigned segments
+    const assignedCount = assignedEntries.length;
+
+    const processedGeoJSONMap = assignedEntries.reduce(
+      (acc, [elementType], idx) => {
+        acc[elementType] = processedCombinedArray[idx];
         return acc;
       },
-      {} as Record<string, (typeof geoJSONArray)[0]>,
+      {} as Record<string, (typeof combinedGeoArray)[0]>,
     );
+
+    const processedUnassignedList = unassignedFiles.map((file, idx) => ({
+      file,
+      geoJSON: processedCombinedArray[assignedCount + idx],
+    }));
 
     // Add sources and layers for each assigned element
     const allCoordinates: [number, number][] = [];
@@ -225,6 +271,76 @@ export function ModelBuilderMap({
       },
     );
 
+    // --- Unassigned Files Rendering (grey shadow layers) ---
+    processedUnassignedList.forEach(({ file, geoJSON }) => {
+      if (!geoJSON) return;
+
+      const sourceId = `unassigned-${file.id}`;
+
+      // Add source
+      map.current!.addSource(sourceId, {
+        type: "geojson",
+        data: geoJSON,
+      });
+
+      const neutralColor = "#9ca3af"; // Tailwind gray-400
+
+      const geomType =
+        file.geometryType || geoJSON.features[0]?.geometry?.type || "Point";
+
+      if (geomType.includes("Line")) {
+        map.current!.addLayer({
+          id: `${sourceId}-line`,
+          type: "line",
+          source: sourceId,
+          paint: {
+            "line-color": neutralColor,
+            "line-width": ["interpolate", ["linear"], ["zoom"], 12, 1, 16, 3],
+            "line-opacity": 0.5,
+          },
+        });
+      } else {
+        map.current!.addLayer({
+          id: `${sourceId}-point`,
+          type: "circle",
+          source: sourceId,
+          paint: {
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              12,
+              2,
+              16,
+              6,
+            ],
+            "circle-color": neutralColor,
+            "circle-stroke-width": 0,
+            "circle-opacity": 0.5,
+          },
+        });
+      }
+
+      // Collect coordinates for bounds calculation
+      geoJSON.features.forEach((feature: any) => {
+        if (feature.geometry.type === "Point") {
+          allCoordinates.push(feature.geometry.coordinates as [number, number]);
+        } else if (feature.geometry.type === "LineString") {
+          allCoordinates.push(
+            ...(feature.geometry.coordinates as [number, number][]),
+          );
+        } else if (feature.geometry.type === "MultiPoint") {
+          allCoordinates.push(
+            ...(feature.geometry.coordinates as [number, number][]),
+          );
+        } else if (feature.geometry.type === "MultiLineString") {
+          feature.geometry.coordinates.forEach((line: any) => {
+            allCoordinates.push(...(line as [number, number][]));
+          });
+        }
+      });
+    });
+
     // Fit map bounds to show all data
     if (allCoordinates.length > 0) {
       const bounds = allCoordinates.reduce(
@@ -255,7 +371,7 @@ export function ModelBuilderMap({
         map.current.fitBounds(bounds, { padding: 20, duration: 0 });
       }, 100);
     }
-  }, [assignedGisData, selectedProjection, mapLoaded]);
+  }, [assignedGisData, unassignedFiles, selectedProjection, mapLoaded]);
 
   const assignedElementsCount = Object.keys(assignedGisData).length;
 
