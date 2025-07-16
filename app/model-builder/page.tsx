@@ -504,6 +504,7 @@ const ModelBuilderPage = () => {
           onFileAssignment={handleFileAssignment}
           onFileUnassignment={handleFileUnassignment}
           onNext={handleNextStep}
+          onPrevious={handlePreviousStep}
           projections={projections}
           loadingProjections={loadingProjections}
           selectedProjection={selectedProjection}

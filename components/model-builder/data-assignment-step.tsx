@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type {
   UploadedFile,
   AssignedGisData,
@@ -23,6 +23,7 @@ interface DataAssignmentStepProps {
   ) => void;
   onFileUnassignment: (elementType: EpanetElementType) => void;
   onNext: () => void;
+  onPrevious: () => void;
   projections: Projection[];
   loadingProjections: boolean;
   selectedProjection: Projection | null;
@@ -38,6 +39,7 @@ export function DataAssignmentStep({
   onFileAssignment,
   onFileUnassignment,
   onNext,
+  onPrevious,
   projections,
   loadingProjections,
   selectedProjection,
@@ -107,7 +109,15 @@ export function DataAssignmentStep({
       </div>
 
       {/* Next Button */}
-      <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
+      <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
+        <button
+          onClick={onPrevious}
+          className="flex items-center space-x-2 px-4 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Back to model settings</span>
+        </button>
+
         <div className="flex flex-col items-end space-y-2">
           {needsReprojection && !selectedProjection && hasAssignedFiles && (
             <div className="text-sm text-amber-600 dark:text-amber-400">
