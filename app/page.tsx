@@ -8,6 +8,7 @@ import {
   Code,
   Blocks,
 } from "lucide-react";
+import { Layers } from "lucide-react";
 
 // Utility types
 type UtilityType = "internal" | "external";
@@ -43,9 +44,20 @@ const utilities: Utility[] = [
   //  icon: <Blocks className="h-6 w-6" />,
   //  color: "from-green-500 to-cyan-500",
   //},
+  // Example utility cards below
+  {
+    id: "epanet-model-viewer",
+    title: "epanet-js",
+    description:
+      "The EPANET you know — but modern, enhanced, and entirely in your browser.",
+    link: "https://epanetjs.com",
+    type: "external",
+    icon: <Layers className="h-6 w-6" />,
+    color: "from-emerald-500 to-teal-500",
+  },
   {
     id: "epanet-js",
-    title: "EPANET-JS",
+    title: "epanet-js Toolkit",
     description:
       "JavaScript library for EPANET hydraulic simulations in the browser.",
     link: "https://github.com/modelcreate/epanet-js",
