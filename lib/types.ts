@@ -16,7 +16,10 @@ export interface Projection {
 }
 
 // Model Builder Types
-export type ModelBuilderStep = "dataAssignment" | "attributeMapping";
+export type ModelBuilderStep =
+  | "modelSettings"
+  | "dataAssignment"
+  | "attributeMapping";
 
 export type EpanetElementType =
   | "pipes"
@@ -65,10 +68,33 @@ export interface EpanetElementDefinition {
 }
 
 export interface ModelBuilderConfig {
+  settings: ModelSettings;
   assignedData: AssignedGisData;
   attributeMapping: AttributeMapping;
   metadata: {
     createdAt: string;
     version: string;
   };
+}
+
+export type FlowUnit =
+  | "CFS"
+  | "GPM"
+  | "MGD"
+  | "IMGD"
+  | "AFD"
+  | "LPS"
+  | "LPM"
+  | "MLD"
+  | "CMH"
+  | "CMD";
+
+export type HeadlossFormula =
+  | "Hazen-Williams"
+  | "Darcy-Weisbach"
+  | "Chezy-Manning";
+
+export interface ModelSettings {
+  flowUnit: FlowUnit;
+  headlossFormula: HeadlossFormula;
 }

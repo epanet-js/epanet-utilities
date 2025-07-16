@@ -1,4 +1,51 @@
 import { EpanetElementDefinition } from "./types";
+import type { FlowUnit, HeadlossFormula } from "./types";
+
+// Flow Unit Definitions
+export const FLOW_UNITS_US: FlowUnit[] = ["CFS", "GPM", "MGD", "IMGD", "AFD"];
+
+export const FLOW_UNITS_METRIC: FlowUnit[] = [
+  "LPS",
+  "LPM",
+  "MLD",
+  "CMH",
+  "CMD",
+];
+
+export const FLOW_UNITS: FlowUnit[] = [...FLOW_UNITS_US, ...FLOW_UNITS_METRIC];
+
+export function isMetricUnit(unit: FlowUnit): boolean {
+  return FLOW_UNITS_METRIC.includes(unit);
+}
+
+// Attribute units mapping depending on selected flow unit (metric vs US)
+const ATTRIBUTE_UNIT_MAP: Record<string, { us: string; metric: string }> = {
+  Diameter: { us: "in", metric: "mm" },
+  InitLevel: { us: "ft", metric: "m" },
+  MinLevel: { us: "ft", metric: "m" },
+  MaxLevel: { us: "ft", metric: "m" },
+  Head: { us: "ft", metric: "m" },
+};
+
+export function getAttributeUnit(
+  attribute: string,
+  unit: FlowUnit,
+): string | null {
+  const mapping = ATTRIBUTE_UNIT_MAP[attribute];
+  if (!mapping) return null;
+  return isMetricUnit(unit) ? mapping.metric : mapping.us;
+}
+
+// Default pipe roughness based on headloss equation
+export const PIPE_ROUGHNESS_DEFAULT: Record<HeadlossFormula, number> = {
+  "Hazen-Williams": 100,
+  "Darcy-Weisbach": 0.01,
+  "Chezy-Manning": 0.013,
+};
+
+export function getDefaultPipeRoughness(formula: HeadlossFormula): number {
+  return PIPE_ROUGHNESS_DEFAULT[formula] ?? 100;
+}
 
 export const EPANET_ELEMENTS: EpanetElementDefinition[] = [
   {

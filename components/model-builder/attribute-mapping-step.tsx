@@ -2,7 +2,11 @@
 
 import { ChevronLeft, Download } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { AssignedGisData, AttributeMapping } from "@/lib/types";
+import type {
+  AssignedGisData,
+  AttributeMapping,
+  ModelSettings,
+} from "@/lib/types";
 import {
   EPANET_ELEMENTS,
   getGeoJSONProperties,
@@ -19,6 +23,7 @@ interface AttributeMappingStepProps {
   ) => void;
   onPrevious: () => void;
   onBuildModel: () => void;
+  modelSettings: ModelSettings;
 }
 
 export function AttributeMappingStep({
@@ -27,6 +32,7 @@ export function AttributeMappingStep({
   onAttributeMappingChange,
   onPrevious,
   onBuildModel,
+  modelSettings,
 }: AttributeMappingStepProps) {
   const elementOrder = [
     "pipes",
@@ -208,6 +214,7 @@ export function AttributeMappingStep({
                     geoJSON={geoJSON}
                     element={element}
                     attributeMapping={elementMapping}
+                    modelSettings={modelSettings}
                   />
                 </div>
               </TabsContent>

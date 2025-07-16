@@ -11,6 +11,7 @@ import type {
   EpanetElementType,
   Projection,
   AssignedFileInfo,
+  ModelSettings,
 } from "@/lib/types";
 import { EPANET_ELEMENTS } from "@/lib/model-builder-constants";
 import { isLikelyLatLng } from "@/lib/check-projection";
@@ -18,12 +19,18 @@ import { isLikelyLatLng } from "@/lib/check-projection";
 // Import components (we'll create these)
 import { DataAssignmentStep } from "@/components/model-builder/data-assignment-step";
 import { AttributeMappingStep } from "@/components/model-builder/attribute-mapping-step";
+import { ModelSettingsStep } from "@/components/model-builder/model-settings-step";
 import { BuildProgressModal } from "@/components/model-builder/BuildProgressModal";
 
 const ModelBuilderPage = () => {
   // State management
   const [currentStep, setCurrentStep] =
-    useState<ModelBuilderStep>("dataAssignment");
+    useState<ModelBuilderStep>("modelSettings");
+
+  const [modelSettings, setModelSettings] = useState<ModelSettings>({
+    flowUnit: "GPM",
+    headlossFormula: "Hazen-Williams",
+  });
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [assignedGisData, setAssignedGisData] = useState<AssignedGisData>({});
   const [attributeMapping, setAttributeMapping] = useState<AttributeMapping>(
@@ -272,6 +279,11 @@ const ModelBuilderPage = () => {
   };
 
   const handleNextStep = () => {
+    if (currentStep === "modelSettings") {
+      setCurrentStep("dataAssignment");
+      return;
+    }
+
     if (currentStep === "dataAssignment") {
       // Check if at least one file is assigned
       const hasAssignedFiles = Object.keys(assignedGisData).length > 0;
@@ -306,12 +318,15 @@ const ModelBuilderPage = () => {
   const handlePreviousStep = () => {
     if (currentStep === "attributeMapping") {
       setCurrentStep("dataAssignment");
+    } else if (currentStep === "dataAssignment") {
+      setCurrentStep("modelSettings");
     }
   };
 
   const handleBuildModel = () => {
     // Prepare configuration object (sent to worker if needed)
     const config = {
+      settings: modelSettings,
       assignedData: assignedGisData,
       attributeMapping,
       projection: {
@@ -392,13 +407,39 @@ const ModelBuilderPage = () => {
           EPANET Model Builder
         </h1>
         <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-          Build an EPANET model from GIS data through a simple two-step process
+          Build an EPANET model from GIS data through a simple three-step
+          process
         </p>
       </header>
 
       {/* Step Progress Indicator */}
       <div className="mb-8">
         <div className="flex items-center justify-center space-x-8">
+          <div
+            className={`flex items-center space-x-2 ${
+              currentStep === "modelSettings"
+                ? "text-blue-600"
+                : "text-slate-400"
+            }`}
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                currentStep === "modelSettings"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-200 text-slate-600"
+              }`}
+            >
+              1
+            </div>
+            <span className="font-medium">Model Settings</span>
+          </div>
+
+          <div
+            className={`w-16 h-0.5 ${
+              currentStep === "dataAssignment" ? "bg-blue-600" : "bg-slate-200"
+            }`}
+          ></div>
+
           <div
             className={`flex items-center space-x-2 ${
               currentStep === "dataAssignment"
@@ -413,7 +454,7 @@ const ModelBuilderPage = () => {
                   : "bg-slate-200 text-slate-600"
               }`}
             >
-              1
+              2
             </div>
             <span className="font-medium">Data Assignment</span>
           </div>
@@ -440,7 +481,7 @@ const ModelBuilderPage = () => {
                   : "bg-slate-200 text-slate-600"
               }`}
             >
-              2
+              3
             </div>
             <span className="font-medium">Attribute Mapping</span>
           </div>
@@ -448,7 +489,13 @@ const ModelBuilderPage = () => {
       </div>
 
       {/* Render current step */}
-      {currentStep === "dataAssignment" ? (
+      {currentStep === "modelSettings" ? (
+        <ModelSettingsStep
+          settings={modelSettings}
+          onSettingsChange={setModelSettings}
+          onNext={handleNextStep}
+        />
+      ) : currentStep === "dataAssignment" ? (
         <DataAssignmentStep
           uploadedFiles={uploadedFiles}
           assignedGisData={assignedGisData}
@@ -470,6 +517,7 @@ const ModelBuilderPage = () => {
           onAttributeMappingChange={handleAttributeMappingChange}
           onPrevious={handlePreviousStep}
           onBuildModel={handleBuildModel}
+          modelSettings={modelSettings}
         />
       )}
     </main>
