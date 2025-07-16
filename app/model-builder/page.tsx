@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -23,7 +23,7 @@ import { AttributeMappingStep } from "@/components/model-builder/attribute-mappi
 import { ModelSettingsStep } from "@/components/model-builder/model-settings-step";
 import { BuildProgressModal } from "@/components/model-builder/BuildProgressModal";
 
-const ModelBuilderPage = () => {
+const ModelBuilderContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -576,6 +576,25 @@ const ModelBuilderPage = () => {
         />
       )}
     </main>
+  );
+};
+
+const ModelBuilderPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-slate-600 dark:text-slate-300">Loading...</p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <ModelBuilderContent />
+    </Suspense>
   );
 };
 
