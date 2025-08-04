@@ -21,6 +21,7 @@ const nextConfig = {
       {
         source: "/model-builder",
         destination: "https://model-build-web-app.vercel.app/:path*",
+        permanent: true,
       },
     ];
   },
