@@ -16,12 +16,12 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  redirects: async () => {
+  rewrites: async () => {
     return [
       {
-        source: "/model-builder",
-        destination: "https://model-build-web-app.vercel.app/:path*",
-        permanent: true,
+        source: "/model-builder/:path*",
+        destination:
+          "https://model-build-web-app.vercel.app/model-builder/:path*",
       },
     ];
   },
