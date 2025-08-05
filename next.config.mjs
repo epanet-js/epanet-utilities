@@ -16,8 +16,13 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  trailingSlash: false,
   rewrites: async () => {
     return [
+      {
+        source: "/model-builder",
+        destination: "https://model-build-web-app.vercel.app/model-builder",
+      },
       {
         source: "/model-builder/:path*",
         destination:
@@ -25,6 +30,13 @@ const nextConfig = {
       },
     ];
   },
+  redirects: [
+    {
+      source: "/model-builder/",
+      destination: "/model-builder",
+      permanent: false,
+    },
+  ],
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
