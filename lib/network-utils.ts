@@ -1,5 +1,4 @@
 import type { NetworkData } from "./types";
-import type { ToGeoJsonResult } from "./epanet-geojson";
 import proj4 from "proj4";
 import { FeatureCollection, Feature, Geometry } from "geojson";
 
