@@ -117,7 +117,6 @@ export function DataExtractor({
               <select
                 value={selectedTime}
                 onChange={(e) => onSelectedTimeChange(e.target.value)}
-                disabled={exportAllTimesteps}
                 className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">Select timestep...</option>
@@ -127,11 +126,6 @@ export function DataExtractor({
                   </option>
                 ))}
               </select>
-              {exportAllTimesteps && (
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  All timesteps will be exported to CSV
-                </p>
-              )}
             </div>
 
             {/* Export All Timesteps Checkbox */}
