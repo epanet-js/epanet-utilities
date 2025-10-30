@@ -63,6 +63,12 @@ export default function DataExtractorPage() {
     message: "",
   });
 
+  // Exporting state (for zipping/shapefile building)
+  const [isExporting, setIsExporting] = useState(false);
+  const [modalMode, setModalMode] = useState<"simulation" | "export">(
+    "simulation",
+  );
+
   // Worker management
   const workerRef = useRef<Worker | null>(null);
   const messageIdRef = useRef(0);
@@ -324,24 +330,38 @@ export default function DataExtractorPage() {
           const geoJsonBlob = new Blob([geoJsonStr], {
             type: "application/json",
           });
-          await createZipBundle(
-            `${trimmedName}.geojson`,
-            geoJsonBlob,
-            nodesCsv,
-            linksCsv,
-            trimmedName,
-          );
+          setModalMode("export");
+          setIsExporting(true);
+          try {
+            await createZipBundle(
+              `${trimmedName}.geojson`,
+              geoJsonBlob,
+              nodesCsv,
+              linksCsv,
+              trimmedName,
+            );
+          } finally {
+            setIsExporting(false);
+            setModalMode("simulation");
+          }
           progressToast.update({
             title: "✅ Export ready",
             description: "GeoJSON and CSVs have been bundled into a ZIP.",
           });
         } else {
           // Build a single shapefile ZIP that includes CSVs
-          const shpZip = await buildShapefileZip(finalGeoJson, trimmedName, {
-            [`${trimmedName}_nodes.csv`]: nodesCsv,
-            [`${trimmedName}_links.csv`]: linksCsv,
-          });
-          saveAs(shpZip, `${trimmedName}.zip`);
+          setModalMode("export");
+          setIsExporting(true);
+          try {
+            const shpZip = await buildShapefileZip(finalGeoJson, trimmedName, {
+              [`${trimmedName}_nodes.csv`]: nodesCsv,
+              [`${trimmedName}_links.csv`]: linksCsv,
+            });
+            saveAs(shpZip, `${trimmedName}.zip`);
+          } finally {
+            setIsExporting(false);
+            setModalMode("simulation");
+          }
           progressToast.update({
             title: "✅ Export ready",
             description: "Shapefile and CSVs have been bundled into one ZIP.",
@@ -366,7 +386,14 @@ export default function DataExtractorPage() {
             description: "GeoJSON exported successfully.",
           });
         } else {
-          await toShapeFile(finalGeoJson, trimmedName);
+          setModalMode("export");
+          setIsExporting(true);
+          try {
+            await toShapeFile(finalGeoJson, trimmedName);
+          } finally {
+            setIsExporting(false);
+            setModalMode("simulation");
+          }
           progressToast.update({
             title: "✅ Export ready",
             description: "Shapefile exported successfully.",
@@ -388,10 +415,15 @@ export default function DataExtractorPage() {
     <main>
       <Toaster />
       <SimulationModal
-        open={isSimulating}
+        open={isSimulating || isExporting}
+        mode={isExporting ? "export" : "simulation"}
         currentStep={simulationProgress.current}
         totalSteps={simulationProgress.total}
-        message={simulationProgress.message}
+        message={
+          isExporting
+            ? "Generating export… please wait."
+            : simulationProgress.message
+        }
       />
 
       <header className="mb-12 text-center">
