@@ -13,7 +13,22 @@ type GeometryType = "POINT" | "POLYLINE";
  * @param geoJson - The GeoJSON FeatureCollection containing EPANET network features
  * @param filename - Base filename for the output (without extension)
  */
-export function toShapeFile(geoJson: FeatureCollection, filename: string) {
+export async function toShapeFile(
+  geoJson: FeatureCollection,
+  filename: string,
+): Promise<void> {
+  const blob = await buildShapefileZip(geoJson, filename);
+  saveAs(blob, `${filename}.zip`);
+}
+
+/**
+ * Builds a shapefile ZIP as a Blob. Optionally includes extra files (e.g., CSVs).
+ */
+export async function buildShapefileZip(
+  geoJson: FeatureCollection,
+  filename: string,
+  extraFiles?: Record<string, Blob | string>,
+): Promise<Blob> {
   const zip = new JSZip();
 
   const polylineCategories: LinkCategories[] = ["Pipe", "Valve", "Pump"];
@@ -29,20 +44,24 @@ export function toShapeFile(geoJson: FeatureCollection, filename: string) {
     writeShapeData(geoJson, cat, "POINT", zip);
   });
 
-  // Generate and download the ZIP file
-  zip
-    .generateAsync({
+  // Add any extra files provided (e.g., CSVs)
+  if (extraFiles) {
+    Object.entries(extraFiles).forEach(([name, content]) => {
+      zip.file(name, content);
+    });
+  }
+
+  // Generate and return the ZIP blob
+  try {
+    const content = await zip.generateAsync({
       type: "blob",
       compression: "DEFLATE",
-    })
-    .then(function (content) {
-      console.log("Shapefile ZIP generated successfully");
-      saveAs(content, `${filename}.zip`);
-    })
-    .catch(function (error) {
-      console.error("Error generating shapefile ZIP:", error);
-      throw error;
     });
+    return content;
+  } catch (error) {
+    console.error("Error generating shapefile ZIP:", error);
+    throw error as Error;
+  }
 }
 
 /**

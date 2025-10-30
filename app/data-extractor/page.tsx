@@ -26,14 +26,14 @@ import {
   ToGeoJsonResult,
   attachSimulationResults,
 } from "@/lib/epanet-geojson";
-import { toShapeFile } from "@/lib/epanet-to-shapefile";
+import { toShapeFile, buildShapefileZip } from "@/lib/epanet-to-shapefile";
 import {
   formatElapsedTime,
   exportNodesToCSV,
   exportLinksToCSV,
   createZipBundle,
-  createZipBundleWithShapefile,
 } from "@/lib/export-csv";
+import { saveAs } from "file-saver";
 
 type ExportFormat = "geojson" | "shapefile";
 
@@ -250,6 +250,10 @@ export default function DataExtractorPage() {
       : networkData.name;
 
     try {
+      const progressToast = toast({
+        title: "Preparing export",
+        description: "Your file will download shortly...",
+      });
       let finalGeoJson: FeatureCollection = epanetGeoJson.geojson;
       let simulationResults: TimeStepResult[] | null = null;
 
@@ -327,29 +331,22 @@ export default function DataExtractorPage() {
             linksCsv,
             trimmedName,
           );
-        } else {
-          // For shapefile, we need to get the shapefile as a blob first
-          // toShapeFile downloads directly, so we need to modify approach
-          // For now, create a simple bundle
-          const geoJsonStr = JSON.stringify(finalGeoJson, null, 2);
-          const geoJsonBlob = new Blob([geoJsonStr], {
-            type: "application/json",
+          progressToast.update({
+            title: "✅ Export ready",
+            description: "GeoJSON and CSVs have been bundled into a ZIP.",
           });
-          await createZipBundle(
-            `${trimmedName}.geojson`,
-            geoJsonBlob,
-            nodesCsv,
-            linksCsv,
-            trimmedName,
-          );
-          // Also trigger shapefile download separately
-          toShapeFile(finalGeoJson, trimmedName);
+        } else {
+          // Build a single shapefile ZIP that includes CSVs
+          const shpZip = await buildShapefileZip(finalGeoJson, trimmedName, {
+            [`${trimmedName}_nodes.csv`]: nodesCsv,
+            [`${trimmedName}_links.csv`]: linksCsv,
+          });
+          saveAs(shpZip, `${trimmedName}.zip`);
+          progressToast.update({
+            title: "✅ Export ready",
+            description: "Shapefile and CSVs have been bundled into one ZIP.",
+          });
         }
-
-        toast({
-          title: "✅ Success!",
-          description: "Files exported successfully. Check your downloads.",
-        });
       } else {
         // Standard export without CSV
         if (exportFormat === "geojson") {
@@ -364,15 +361,15 @@ export default function DataExtractorPage() {
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
 
-          toast({
-            title: "✅ Success!",
-            description: "GeoJSON exported successfully",
+          progressToast.update({
+            title: "✅ Export ready",
+            description: "GeoJSON exported successfully.",
           });
         } else {
-          toShapeFile(finalGeoJson, trimmedName);
-          toast({
-            title: "✅ Success!",
-            description: "Shapefile export started. Check your downloads.",
+          await toShapeFile(finalGeoJson, trimmedName);
+          progressToast.update({
+            title: "✅ Export ready",
+            description: "Shapefile exported successfully.",
           });
         }
       }
