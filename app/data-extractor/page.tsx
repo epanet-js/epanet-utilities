@@ -16,7 +16,6 @@ import type {
 import { FeatureCollection, GeoJsonProperties, Geometry } from "geojson";
 import { parseINPFile } from "@/lib/network-utils";
 import { toast } from "@/hooks/use-toast";
-import { Toaster } from "@/components/ui/toaster";
 
 import { isLikelyLatLng } from "@/lib/check-projection";
 import { approximateReprojectToLatLngSingle } from "@/lib/approx-reproject";
@@ -256,10 +255,6 @@ export default function DataExtractorPage() {
       : networkData.name;
 
     try {
-      const progressToast = toast({
-        title: "Preparing export",
-        description: "Your file will download shortly...",
-      });
       let finalGeoJson: FeatureCollection = epanetGeoJson.geojson;
       let simulationResults: TimeStepResult[] | null = null;
 
@@ -344,10 +339,6 @@ export default function DataExtractorPage() {
             setIsExporting(false);
             setModalMode("simulation");
           }
-          progressToast.update({
-            title: "✅ Export ready",
-            description: "GeoJSON and CSVs have been bundled into a ZIP.",
-          });
         } else {
           // Build a single shapefile ZIP that includes CSVs
           setModalMode("export");
@@ -362,10 +353,6 @@ export default function DataExtractorPage() {
             setIsExporting(false);
             setModalMode("simulation");
           }
-          progressToast.update({
-            title: "✅ Export ready",
-            description: "Shapefile and CSVs have been bundled into one ZIP.",
-          });
         }
       } else {
         // Standard export without CSV
@@ -380,11 +367,6 @@ export default function DataExtractorPage() {
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
-
-          progressToast.update({
-            title: "✅ Export ready",
-            description: "GeoJSON exported successfully.",
-          });
         } else {
           setModalMode("export");
           setIsExporting(true);
@@ -394,10 +376,6 @@ export default function DataExtractorPage() {
             setIsExporting(false);
             setModalMode("simulation");
           }
-          progressToast.update({
-            title: "✅ Export ready",
-            description: "Shapefile exported successfully.",
-          });
         }
       }
     } catch (error) {
@@ -413,7 +391,6 @@ export default function DataExtractorPage() {
 
   return (
     <main>
-      <Toaster />
       <SimulationModal
         open={isSimulating || isExporting}
         mode={isExporting ? "export" : "simulation"}
