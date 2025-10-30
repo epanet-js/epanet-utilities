@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 // EPANET Simulation Web Worker
 
-import { Workspace, Project, InitHydOption } from "epanet-js";
+import { Workspace, Project, InitHydOption, NodeProperty } from "epanet-js";
 import type {
   SimulationWorkerRequest,
   SimulationWorkerResponse,
@@ -49,33 +49,6 @@ const NodeType = {
   Junction: 0,
   Reservoir: 1,
   Tank: 2,
-};
-
-const NodeProperty = {
-  Elevation: 0,
-  Demand: 1,
-  Head: 2,
-  Pressure: 3,
-  Quality: 4,
-  SourceMass: 5,
-  InitVolume: 6,
-  MixModel: 7,
-  MixZoneVol: 8,
-  TankDiam: 9,
-  MinVolume: 10,
-  VolCurve: 11,
-  MinLevel: 12,
-  MaxLevel: 13,
-  MixFraction: 14,
-  TankKBulk: 15,
-  TankVolume: 16,
-  MaxVolume: 17,
-  CanOverflow: 18,
-  DemandDeficit: 19,
-  EmitterFlow: 20,
-  LeakageDemand: 21,
-  X: 22,
-  Y: 23,
 };
 
 const LinkProperty = {
@@ -351,9 +324,6 @@ function extractNodeResults(): NodeResult[] {
       pressure: model.getNodeValue(i, NodeProperty.Pressure),
       demand: model.getNodeValue(i, NodeProperty.Demand),
       head: model.getNodeValue(i, NodeProperty.Head),
-      elevation: model.getNodeValue(i, NodeProperty.Elevation),
-      x: model.getNodeValue(i, NodeProperty.X),
-      y: model.getNodeValue(i, NodeProperty.Y),
     };
 
     results.push(result);

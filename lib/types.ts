@@ -113,9 +113,6 @@ export interface NodeResult {
   pressure?: number;
   demand?: number;
   head?: number;
-  elevation?: number;
-  x?: number;
-  y?: number;
 }
 
 export interface LinkResult {

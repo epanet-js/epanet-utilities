@@ -25,9 +25,6 @@ export function exportNodesToCSV(results: TimeStepResult[]): string {
     "pressure",
     "demand",
     "head",
-    "elevation",
-    "x_coordinate",
-    "y_coordinate",
   ];
 
   const rows: string[] = [headers.join(",")];
