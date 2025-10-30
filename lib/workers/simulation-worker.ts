@@ -211,6 +211,7 @@ async function handleRunSimulation(
   const totalTargets = targets.length;
   let nextTargetIdx = 0;
   let collected = 0;
+  const singleTarget = totalTargets === 1 ? targets[0] : null;
 
   // Open/init hydraulics once
   model.openH();
@@ -222,6 +223,20 @@ async function handleRunSimulation(
 
     do {
       currentTime = model.runH();
+
+      // For single-target runs, emit granular progress based on time advanced
+      if (singleTarget !== null) {
+        const boundedCurrent = Math.min(currentTime, singleTarget);
+        const progressMsg: SimulationProgressMessage = {
+          type: "PROGRESS",
+          currentStep: currentTime,
+          totalSteps: singleTarget,
+          message: `Simulating ${formatSeconds(
+            boundedCurrent,
+          )} of ${formatSeconds(singleTarget)}`,
+        };
+        self.postMessage(progressMsg);
+      }
 
       // Collect results for any targets reached at or before currentTime
       while (
@@ -235,13 +250,18 @@ async function handleRunSimulation(
         results.push({ timePeriod, nodes, links });
         collected++;
 
-        const progressMsg: SimulationProgressMessage = {
-          type: "PROGRESS",
-          currentStep: collected,
-          totalSteps: totalTargets,
-          message: `Collected timestep ${collected} of ${totalTargets} (t=${timePeriod}s)`,
-        };
-        self.postMessage(progressMsg);
+        // For multi-target runs, progress is based on number of collected timesteps
+        if (singleTarget === null) {
+          const progressMsg: SimulationProgressMessage = {
+            type: "PROGRESS",
+            currentStep: collected,
+            totalSteps: totalTargets,
+            message: `Collected timestep ${collected} of ${totalTargets} (t=${formatSeconds(
+              timePeriod,
+            )})`,
+          };
+          self.postMessage(progressMsg);
+        }
 
         nextTargetIdx++;
       }
@@ -259,6 +279,21 @@ async function handleRunSimulation(
   }
 
   return { results };
+}
+
+// Format seconds to HH:MM:SS (or MM:SS when under 1 hour)
+function formatSeconds(totalSeconds: number): string {
+  const sec = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(sec / 3600);
+  const minutes = Math.floor((sec % 3600) / 60);
+  const seconds = sec % 60;
+  const mm = String(minutes).padStart(2, "0");
+  const ss = String(seconds).padStart(2, "0");
+  if (hours > 0) {
+    const hh = String(hours).padStart(2, "0");
+    return `${hh}:${mm}:${ss}`;
+  }
+  return `${mm}:${ss}`;
 }
 
 // Step through simulation to reach target time
