@@ -7,6 +7,7 @@ import {
   Globe,
   Code,
   Blocks,
+  Database,
 } from "lucide-react";
 import { Layers } from "lucide-react";
 
@@ -34,6 +35,16 @@ const utilities: Utility[] = [
     type: "internal",
     icon: <Globe className="h-6 w-6" />,
     color: "from-blue-500 to-cyan-500",
+  },
+  {
+    id: "data-extractor",
+    title: "EPANET Data Extractor",
+    description:
+      "Convert EPANET INP files to GIS formats (GeoJSON/Shapefile) with optional simulation results.",
+    link: "/data-extractor",
+    type: "internal",
+    icon: <Database className="h-6 w-6" />,
+    color: "from-orange-500 to-amber-500",
   },
   //{
   //  id: "model-builder",
