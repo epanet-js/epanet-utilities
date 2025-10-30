@@ -45,7 +45,7 @@ export default function DataExtractorPage() {
     Geometry,
     GeoJsonProperties
   > | null>(null);
-  const [exportFormat, setExportFormat] = useState<ExportFormat>("geojson");
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("shapefile");
   const [includeResults, setIncludeResults] = useState<boolean>(false);
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [exportAllTimesteps, setExportAllTimesteps] = useState<boolean>(false);
