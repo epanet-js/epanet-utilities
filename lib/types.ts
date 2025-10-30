@@ -98,3 +98,73 @@ export interface ModelSettings {
   flowUnit: FlowUnit;
   headlossFormula: HeadlossFormula;
 }
+
+// EPANET Simulation Types
+export interface TimeParameterInfo {
+  duration: number; // Total simulation duration in seconds
+  reportStep: number; // Reporting time step in seconds
+  reportStart: number; // Time when reporting starts in seconds
+  periods: number; // Number of reporting time periods
+}
+
+export interface NodeResult {
+  id: string;
+  type: "Junction" | "Tank" | "Reservoir";
+  pressure?: number;
+  demand?: number;
+  head?: number;
+  elevation?: number;
+  x?: number;
+  y?: number;
+}
+
+export interface LinkResult {
+  id: string;
+  type: "Pipe" | "Valve" | "Pump";
+  flow?: number;
+  velocity?: number;
+  headloss?: number;
+  status?: number;
+}
+
+export interface TimeStepResult {
+  timePeriod: number; // Time in seconds
+  nodes: NodeResult[];
+  links: LinkResult[];
+}
+
+export interface SimulationResults {
+  timeInfo: TimeParameterInfo;
+  results: TimeStepResult[];
+}
+
+// Worker message types
+export const SimulationMessageType = {
+  LOAD_FILE: "LOAD_FILE",
+  GET_TIME_PARAMETERS: "GET_TIME_PARAMETERS",
+  RUN_SIMULATION: "RUN_SIMULATION",
+  PROGRESS: "PROGRESS",
+} as const;
+
+export type SimulationMessageType =
+  (typeof SimulationMessageType)[keyof typeof SimulationMessageType];
+
+export interface SimulationWorkerRequest {
+  id: string;
+  type: SimulationMessageType;
+  payload?: any;
+}
+
+export interface SimulationWorkerResponse {
+  id: string;
+  success: boolean;
+  payload?: any;
+  error?: string;
+}
+
+export interface SimulationProgressMessage {
+  type: "PROGRESS";
+  currentStep: number;
+  totalSteps: number;
+  message: string;
+}

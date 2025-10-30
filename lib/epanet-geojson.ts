@@ -1,4 +1,5 @@
 import { FeatureCollection, Feature, Point, LineString } from "geojson";
+import type { TimeStepResult } from "./types";
 
 /******************************************************
  * INTERFACES & TYPES
@@ -866,4 +867,75 @@ function parseVertices(
 
   link.geometry.coordinates.push([x, y]);
   return data;
+}
+
+/******************************************************
+ * RESULT ATTACHMENT: Merge simulation results into GeoJSON
+ ******************************************************/
+
+/**
+ * Attach simulation results to GeoJSON features
+ * Matches results to features by element ID and adds result properties
+ */
+export function attachSimulationResults(
+  geojson: FeatureCollection,
+  timeStepResult: TimeStepResult,
+): FeatureCollection {
+  // Create lookup maps for quick access
+  const nodeResultsMap = new Map(
+    timeStepResult.nodes.map((node) => [node.id, node]),
+  );
+  const linkResultsMap = new Map(
+    timeStepResult.links.map((link) => [link.id, link]),
+  );
+
+  // Clone the GeoJSON to avoid mutating the original
+  const enrichedGeoJson: FeatureCollection = {
+    ...geojson,
+    features: geojson.features.map((feature) => {
+      const featureId = feature.properties?.id;
+      if (!featureId) return feature;
+
+      // Check if this is a node or link feature
+      const featureType = feature.properties?.type;
+
+      if (featureType === "Node") {
+        const nodeResult = nodeResultsMap.get(featureId);
+        if (nodeResult) {
+          return {
+            ...feature,
+            properties: {
+              ...feature.properties,
+              // Add simulation results
+              sim_pressure: nodeResult.pressure,
+              sim_demand: nodeResult.demand,
+              sim_head: nodeResult.head,
+              sim_elevation: nodeResult.elevation,
+              sim_timestep: timeStepResult.timePeriod,
+            },
+          };
+        }
+      } else if (featureType === "Link") {
+        const linkResult = linkResultsMap.get(featureId);
+        if (linkResult) {
+          return {
+            ...feature,
+            properties: {
+              ...feature.properties,
+              // Add simulation results
+              sim_flow: linkResult.flow,
+              sim_velocity: linkResult.velocity,
+              sim_headloss: linkResult.headloss,
+              sim_status: linkResult.status,
+              sim_timestep: timeStepResult.timePeriod,
+            },
+          };
+        }
+      }
+
+      return feature;
+    }),
+  };
+
+  return enrichedGeoJson;
 }

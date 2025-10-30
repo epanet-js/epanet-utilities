@@ -32,6 +32,9 @@ importers:
       cmdk:
         specifier: latest
         version: 1.1.1(@types/react-dom@18.3.7(@types/react@18.3.26))(@types/react@18.3.26)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      epanet-js:
+        specifier: 0.8.0-alpha.7
+        version: 0.8.0-alpha.7
       file-saver:
         specifier: ^2.0.5
         version: 2.0.5
@@ -182,6 +185,9 @@ packages:
   '@mapbox/whoots-js@3.1.0':
     resolution: {integrity: sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==}
     engines: {node: '>=6.0.0'}
+
+  '@model-create/epanet-engine@0.8.0-alpha.7':
+    resolution: {integrity: sha512-+okso1jbQJhf+fDsQhk8jKb4RtqXEfszAtjrTwCUQTDlVxB2BLOhIecw4+FjXJwBxy1IVIYvIRBovsf+LldGGg==}
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -1011,6 +1017,9 @@ packages:
 
   emoji-regex@9.2.2:
     resolution: {integrity: sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==}
+
+  epanet-js@0.8.0-alpha.7:
+    resolution: {integrity: sha512-xi/gbgpLI8KNF7wi+gReGdZnGboE1qtcjoQqC13C7pPAhZBMjH2k9FhTWfV/hJgxHiIVRQxLbk3s/1xEVA80tw==}
 
   es-abstract@1.24.0:
     resolution: {integrity: sha512-WSzPgsdLtTcQwm4CROfS5ju2Wa1QQcVeT37jFjYzdFz1r9ahadC8B8/a4qxJxM+09F18iumCdRmlr96ZYkQvEg==}
@@ -2392,6 +2401,8 @@ snapshots:
 
   '@mapbox/whoots-js@3.1.0': {}
 
+  '@model-create/epanet-engine@0.8.0-alpha.7': {}
+
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
       '@emnapi/core': 1.6.0
@@ -3184,6 +3195,10 @@ snapshots:
   emoji-regex@8.0.0: {}
 
   emoji-regex@9.2.2: {}
+
+  epanet-js@0.8.0-alpha.7:
+    dependencies:
+      '@model-create/epanet-engine': 0.8.0-alpha.7
 
   es-abstract@1.24.0:
     dependencies:

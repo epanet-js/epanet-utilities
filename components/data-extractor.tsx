@@ -16,6 +16,7 @@ interface DataExtractorProps {
   onExportAllTimestepsChange: (shouldExport: boolean) => void;
   onDownload: () => void;
   canDownload: boolean;
+  timestepOptions: { value: number; label: string }[];
 }
 
 export function DataExtractor({
@@ -29,41 +30,16 @@ export function DataExtractor({
   onExportAllTimestepsChange,
   onDownload,
   canDownload,
+  timestepOptions,
 }: DataExtractorProps) {
   const [isFormatDropdownOpen, setIsFormatDropdownOpen] = useState(false);
-
-  // Placeholder timestep options
-  const timestepOptions = [
-    "0:00",
-    "1:00",
-    "2:00",
-    "3:00",
-    "4:00",
-    "5:00",
-    "6:00",
-    "7:00",
-    "8:00",
-    "9:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00",
-    "19:00",
-    "20:00",
-    "21:00",
-    "22:00",
-    "23:00",
-  ];
 
   const formatOptions = [
     { value: "geojson", label: "GeoJSON" },
     { value: "shapefile", label: "Shapefile" },
   ];
+
+  const hasTimesteps = timestepOptions.length > 0;
 
   return (
     <div className="space-y-6">
@@ -116,10 +92,16 @@ export function DataExtractor({
               type="checkbox"
               checked={includeResults}
               onChange={(e) => onIncludeResultsChange(e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-600 rounded"
+              disabled={!hasTimesteps}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Include simulation results
+              {!hasTimesteps && (
+                <span className="text-xs text-slate-500 ml-2">
+                  (Load file first)
+                </span>
+              )}
             </span>
           </label>
         </div>
@@ -135,15 +117,21 @@ export function DataExtractor({
               <select
                 value={selectedTime}
                 onChange={(e) => onSelectedTimeChange(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={exportAllTimesteps}
+                className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">Select timestep...</option>
-                {timestepOptions.map((time) => (
-                  <option key={time} value={time}>
-                    {time}
+                {timestepOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
+              {exportAllTimesteps && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  All timesteps will be exported to CSV
+                </p>
+              )}
             </div>
 
             {/* Export All Timesteps Checkbox */}
@@ -159,6 +147,12 @@ export function DataExtractor({
                   Export all timesteps as CSV
                 </span>
               </label>
+              {exportAllTimesteps && (
+                <p className="text-xs text-slate-500 dark:text-slate-400 ml-6">
+                  Results will be bundled in a ZIP file with separate CSV files
+                  for nodes and links
+                </p>
+              )}
             </div>
           </div>
         )}
