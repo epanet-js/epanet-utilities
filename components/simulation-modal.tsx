@@ -29,10 +29,7 @@ export function SimulationModal({
 
         {/* Progress indicator */}
         <div className="space-y-2">
-          <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>
-              Step {currentStep} of {totalSteps}
-            </span>
+          <div className="flex justify-end text-xs text-slate-500 dark:text-slate-400">
             <span>{Math.round(progress)}%</span>
           </div>
 
