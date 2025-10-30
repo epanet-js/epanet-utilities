@@ -14,6 +14,7 @@ import { isLikelyLatLng } from "@/lib/check-projection";
 import { approximateReprojectToLatLngSingle } from "@/lib/approx-reproject";
 
 import { toGeoJson, ToGeoJsonResult } from "@/lib/epanet-geojson";
+import { toShapeFile } from "@/lib/epanet-to-shapefile";
 
 type ExportFormat = "geojson" | "shapefile";
 
@@ -72,6 +73,10 @@ export default function DataExtractorPage() {
     if (!networkData || !epanetGeoJson) return;
 
     try {
+      const trimmedName = networkData.name.endsWith(".inp")
+        ? networkData.name.slice(0, -4)
+        : networkData.name;
+
       if (exportFormat === "geojson") {
         // Download GeoJSON
         const dataStr = JSON.stringify(epanetGeoJson.geojson, null, 2);
@@ -79,21 +84,17 @@ export default function DataExtractorPage() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-
-        const trimmedName = networkData.name.endsWith(".inp")
-          ? networkData.name.slice(0, -4)
-          : networkData.name;
         a.download = `${trimmedName}.geojson`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else {
-        // Shapefile placeholder
+        // Download Shapefile
+        toShapeFile(epanetGeoJson.geojson, trimmedName);
         toast({
-          title: "⚠️ Coming Soon",
-          description: "Shapefile export will be available in a future update",
-          variant: "destructive",
+          title: "✅ Success!",
+          description: "Shapefile export started. Check your downloads folder.",
         });
       }
     } catch (error) {

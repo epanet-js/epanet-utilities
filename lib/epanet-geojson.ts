@@ -33,7 +33,7 @@ type LinkFeature = Pipe | Valve | Pump;
 /** Base Node property shape */
 interface NodeProperties {
   type: "Node";
-  category: "Junction" | "Tank" | "Reservior";
+  category: "Junction" | "Tank" | "Reservoir";
   id: string;
   comment?: string; // We'll store the parsed comment here
 }
@@ -77,7 +77,7 @@ interface Tank extends Feature<Point, TankProperties> {
 }
 
 interface ReservoirProperties extends NodeProperties {
-  category: "Reservior";
+  category: "Reservoir";
   head: number;
   pattern?: string;
 }
@@ -194,7 +194,7 @@ export function toGeoJson(inpFile: string): ToGeoJsonResult {
       addError(
         finalData,
         0,
-        `Link "${linkId}" references missing node(s): [${usNodeId}, ${dsNodeId}]`
+        `Link "${linkId}" references missing node(s): [${usNodeId}, ${dsNodeId}]`,
       );
       return link; // keep as-is (with partial geometry) but note the error
     }
@@ -241,7 +241,7 @@ export function toGeoJson(inpFile: string): ToGeoJsonResult {
 function parseLine(
   data: EpanetData,
   rawLine: string,
-  lineNumber: number
+  lineNumber: number,
 ): EpanetData {
   // Extract comment: anything after ';'
   const commentIndex = rawLine.indexOf(";");
@@ -298,7 +298,7 @@ function parseLine(
       addError(
         data,
         lineNumber,
-        `Unrecognized section: "${data.currentFunction}". Line: "${lineContent}"`
+        `Unrecognized section: "${data.currentFunction}". Line: "${lineContent}"`,
       );
       return data;
   }
@@ -327,14 +327,14 @@ function parseJunction(
   data: EpanetData,
   line: string,
   lineNumber: number,
-  comment: string
+  comment: string,
 ): EpanetData {
   const tokens = line.split(" ");
   if (tokens.length < 2) {
     addError(
       data,
       lineNumber,
-      `Junction requires at least 2 columns: ID, Elevation. Got: "${line}"`
+      `Junction requires at least 2 columns: ID, Elevation. Got: "${line}"`,
     );
     return data;
   }
@@ -344,7 +344,7 @@ function parseJunction(
     addError(
       data,
       lineNumber,
-      `Could not parse JUNCTION elevation as float: "${elevStr}"`
+      `Could not parse JUNCTION elevation as float: "${elevStr}"`,
     );
   }
 
@@ -357,7 +357,7 @@ function parseJunction(
       addError(
         data,
         lineNumber,
-        `Could not parse JUNCTION demand as float: "${demandStr}"`
+        `Could not parse JUNCTION demand as float: "${demandStr}"`,
       );
     }
   }
@@ -393,7 +393,7 @@ function parseReservoir(
   data: EpanetData,
   line: string,
   lineNumber: number,
-  comment: string
+  comment: string,
 ): EpanetData {
   const tokens = line.split(" ");
   if (tokens.length < 2) {
@@ -406,7 +406,7 @@ function parseReservoir(
     addError(
       data,
       lineNumber,
-      `Could not parse RESERVOIR head as float: "${headStr}"`
+      `Could not parse RESERVOIR head as float: "${headStr}"`,
     );
   }
 
@@ -419,7 +419,7 @@ function parseReservoir(
     },
     properties: {
       type: "Node",
-      category: "Reservior",
+      category: "Reservoir",
       id,
       head,
       pattern: patternStr,
@@ -440,14 +440,14 @@ function parseTank(
   data: EpanetData,
   line: string,
   lineNumber: number,
-  comment: string
+  comment: string,
 ): EpanetData {
   const tokens = line.split(" ");
   if (tokens.length < 7) {
     addError(
       data,
       lineNumber,
-      `Tank requires at least 7 columns. Got: "${line}"`
+      `Tank requires at least 7 columns. Got: "${line}"`,
     );
     return data;
   }
@@ -516,14 +516,14 @@ function parsePipe(
   data: EpanetData,
   line: string,
   lineNumber: number,
-  comment: string
+  comment: string,
 ): EpanetData {
   const tokens = line.split(" ");
   if (tokens.length < 6) {
     addError(
       data,
       lineNumber,
-      `Pipe requires at least 6 columns. Got: "${line}"`
+      `Pipe requires at least 6 columns. Got: "${line}"`,
     );
     return data;
   }
@@ -586,14 +586,14 @@ function parseValve(
   data: EpanetData,
   line: string,
   lineNumber: number,
-  comment: string
+  comment: string,
 ): EpanetData {
   const tokens = line.split(" ");
   if (tokens.length < 7) {
     addError(
       data,
       lineNumber,
-      `Valve requires at least 7 columns (ID, UsNode, DsNode, Diameter, Type, Setting, MinorLoss). Got: "${line}"`
+      `Valve requires at least 7 columns (ID, UsNode, DsNode, Diameter, Type, Setting, MinorLoss). Got: "${line}"`,
     );
     return data;
   }
@@ -657,7 +657,7 @@ function parsePump(
   data: EpanetData,
   line: string,
   lineNumber: number,
-  comment: string
+  comment: string,
 ): EpanetData {
   const tokens = line.split(" ");
   // Minimal columns for ID, USNode, DSNode is 3 tokens.
@@ -667,7 +667,7 @@ function parsePump(
     addError(
       data,
       lineNumber,
-      `Pump requires at least (ID, UsNode, DsNode). Got: "${line}"`
+      `Pump requires at least (ID, UsNode, DsNode). Got: "${line}"`,
     );
     return data;
   }
@@ -758,7 +758,7 @@ function parsePump(
     addError(
       data,
       lineNumber,
-      `PUMP line missing HEAD or POWER specification. Defaulting to Power=0. Line: "${line}"`
+      `PUMP line missing HEAD or POWER specification. Defaulting to Power=0. Line: "${line}"`,
     );
     pumpProps = {
       type: "Link",
@@ -796,14 +796,14 @@ function parsePump(
 function parseCoordinates(
   data: EpanetData,
   line: string,
-  lineNumber: number
+  lineNumber: number,
 ): EpanetData {
   const tokens = line.split(" ");
   if (tokens.length < 3) {
     addError(
       data,
       lineNumber,
-      `COORDINATES requires NodeID, X, Y. Got: "${line}"`
+      `COORDINATES requires NodeID, X, Y. Got: "${line}"`,
     );
     return data;
   }
@@ -813,7 +813,7 @@ function parseCoordinates(
     addError(
       data,
       lineNumber,
-      `COORDINATES references unknown node "${nodeId}".`
+      `COORDINATES references unknown node "${nodeId}".`,
     );
     return data;
   }
@@ -824,7 +824,7 @@ function parseCoordinates(
     addError(
       data,
       lineNumber,
-      `COORDINATES invalid X/Y: "${xStr}", "${yStr}".`
+      `COORDINATES invalid X/Y: "${xStr}", "${yStr}".`,
     );
     return data;
   }
@@ -839,14 +839,14 @@ function parseCoordinates(
 function parseVertices(
   data: EpanetData,
   line: string,
-  lineNumber: number
+  lineNumber: number,
 ): EpanetData {
   const tokens = line.split(" ");
   if (tokens.length < 3) {
     addError(
       data,
       lineNumber,
-      `VERTICES requires LinkID, X, Y. Got: "${line}"`
+      `VERTICES requires LinkID, X, Y. Got: "${line}"`,
     );
     return data;
   }
