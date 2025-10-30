@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Globe,
   Code,
-  Blocks,
   Database,
 } from "lucide-react";
 import { Layers } from "lucide-react";

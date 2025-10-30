@@ -88,7 +88,10 @@ self.addEventListener(
     const { id, type, payload } = event.data;
 
     try {
-      let result: any;
+      let result:
+        | { flowUnit: number }
+        | { timeInfo: TimeParameterInfo }
+        | { results: TimeStepResult[] };
 
       switch (type) {
         case "LOAD_FILE":
@@ -98,7 +101,10 @@ self.addEventListener(
           result = handleGetTimeParameters();
           break;
         case "RUN_SIMULATION":
-          result = await handleRunSimulation(id, payload);
+          result = await handleRunSimulation(
+            id,
+            payload as { timePeriods: number[] },
+          );
           break;
         default:
           throw new Error(`Unknown message type: ${type}`);
@@ -269,32 +275,7 @@ function formatSeconds(totalSeconds: number): string {
   return `${mm}:${ss}`;
 }
 
-// Step through simulation to reach target time
-function stepToTime(targetTimeSeconds: number): void {
-  if (!model) {
-    throw new Error("Model not loaded");
-  }
-
-  // If target time is 0 or less, just run once (steady state)
-  if (targetTimeSeconds <= 0) {
-    model.runH();
-    return;
-  }
-
-  let currentTime = 0;
-  let tStep = Infinity;
-
-  do {
-    currentTime = model.runH();
-
-    // If we've reached or passed the target time, stop
-    if (currentTime >= targetTimeSeconds) {
-      break;
-    }
-
-    tStep = model.nextH();
-  } while (tStep > 0);
-}
+// (removed unused stepToTime)
 
 // Extract node results at current time
 function extractNodeResults(): NodeResult[] {

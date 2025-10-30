@@ -1,4 +1,4 @@
-// @ts-ignore - hwbllmnn-shp-write doesn't have TypeScript definitions
+// @ts-expect-error: hwbllmnn-shp-write has no TypeScript definitions
 import shpWrite from "hwbllmnn-shp-write";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -103,8 +103,14 @@ function writeShapeData(
 /**
  * Callback function to add shapefile components to the ZIP archive
  */
+type ShpWriteFiles = {
+  shp: { buffer: ArrayBufferLike };
+  shx: { buffer: ArrayBufferLike };
+  dbf: { buffer: ArrayBufferLike };
+};
+
 function addFilesToZip(fileName: string, zip: JSZip) {
-  return (err: Error, files: any) => {
+  return (err: Error | null, files: ShpWriteFiles) => {
     if (err) {
       console.error(`Error writing shapefile for ${fileName}:`, err);
       throw err;

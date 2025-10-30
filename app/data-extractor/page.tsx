@@ -64,9 +64,6 @@ export default function DataExtractorPage() {
 
   // Exporting state (for zipping/shapefile building)
   const [isExporting, setIsExporting] = useState(false);
-  const [modalMode, setModalMode] = useState<"simulation" | "export">(
-    "simulation",
-  );
 
   // Worker management
   const workerRef = useRef<Worker | null>(null);
@@ -74,7 +71,7 @@ export default function DataExtractorPage() {
   const pendingRequestsRef = useRef(
     new Map<
       string,
-      { resolve: (value: any) => void; reject: (reason: Error) => void }
+      { resolve: (value: unknown) => void; reject: (reason: Error) => void }
     >(),
   );
 
@@ -121,7 +118,21 @@ export default function DataExtractorPage() {
   }, []);
 
   // Helper function to send messages to worker
-  const sendWorkerMessage = (type: string, payload?: any): Promise<any> => {
+  function sendWorkerMessage(
+    type: "LOAD_FILE",
+    payload: { fileContent: string },
+  ): Promise<{ flowUnit: number }>;
+  function sendWorkerMessage(
+    type: "GET_TIME_PARAMETERS",
+  ): Promise<{ timeInfo: TimeParameterInfo }>;
+  function sendWorkerMessage(
+    type: "RUN_SIMULATION",
+    payload: { timePeriods: number[] },
+  ): Promise<{ results: TimeStepResult[] }>;
+  function sendWorkerMessage(
+    type: string,
+    payload?: unknown,
+  ): Promise<unknown> {
     return new Promise((resolve, reject) => {
       if (!workerRef.current) {
         reject(new Error("Worker not initialized"));
@@ -133,13 +144,15 @@ export default function DataExtractorPage() {
 
       const request: SimulationWorkerRequest = {
         id,
-        type: type as any,
-        payload,
+        // cast to SimulationMessageType is safe because we control callers via overloads above
+        type: type as unknown as SimulationWorkerRequest["type"],
+        // payload is typed by overloads; store as unknown and handled in worker
+        payload: payload as never,
       };
 
       workerRef.current.postMessage(request);
     });
-  };
+  }
 
   // Generate timestep options from time info
   const generateTimeOptions = (
@@ -211,7 +224,9 @@ export default function DataExtractorPage() {
           const timeParamsResponse = await sendWorkerMessage(
             "GET_TIME_PARAMETERS",
           );
-          const timeParams = timeParamsResponse.timeInfo as TimeParameterInfo;
+          const timeParams = (
+            timeParamsResponse as { timeInfo: TimeParameterInfo }
+          ).timeInfo;
           setTimeInfo(timeParams);
 
           // Generate timestep options
@@ -325,7 +340,6 @@ export default function DataExtractorPage() {
           const geoJsonBlob = new Blob([geoJsonStr], {
             type: "application/json",
           });
-          setModalMode("export");
           setIsExporting(true);
           try {
             await createZipBundle(
@@ -337,11 +351,9 @@ export default function DataExtractorPage() {
             );
           } finally {
             setIsExporting(false);
-            setModalMode("simulation");
           }
         } else {
           // Build a single shapefile ZIP that includes CSVs
-          setModalMode("export");
           setIsExporting(true);
           try {
             const shpZip = await buildShapefileZip(finalGeoJson, trimmedName, {
@@ -351,7 +363,6 @@ export default function DataExtractorPage() {
             saveAs(shpZip, `${trimmedName}.zip`);
           } finally {
             setIsExporting(false);
-            setModalMode("simulation");
           }
         }
       } else {
@@ -368,13 +379,11 @@ export default function DataExtractorPage() {
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
         } else {
-          setModalMode("export");
           setIsExporting(true);
           try {
             await toShapeFile(finalGeoJson, trimmedName);
           } finally {
             setIsExporting(false);
-            setModalMode("simulation");
           }
         }
       }

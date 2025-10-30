@@ -64,7 +64,7 @@ export interface EpanetElementDefinition {
   geometryTypes: string[];
   requiredAttributes: string[];
   optionalAttributes: string[];
-  defaultValues: Record<string, any>;
+  defaultValues: Record<string, string | number | boolean>;
 }
 
 export interface ModelBuilderConfig {
@@ -146,18 +146,37 @@ export const SimulationMessageType = {
 export type SimulationMessageType =
   (typeof SimulationMessageType)[keyof typeof SimulationMessageType];
 
-export interface SimulationWorkerRequest {
-  id: string;
-  type: SimulationMessageType;
-  payload?: any;
-}
+export type SimulationWorkerRequest =
+  | {
+      id: string;
+      type: "LOAD_FILE";
+      payload: { fileContent: string };
+    }
+  | {
+      id: string;
+      type: "GET_TIME_PARAMETERS";
+      payload?: undefined;
+    }
+  | {
+      id: string;
+      type: "RUN_SIMULATION";
+      payload: { timePeriods: number[] };
+    };
 
-export interface SimulationWorkerResponse {
-  id: string;
-  success: boolean;
-  payload?: any;
-  error?: string;
-}
+export type SimulationWorkerResponse =
+  | {
+      id: string;
+      success: true;
+      payload:
+        | { flowUnit: number }
+        | { timeInfo: TimeParameterInfo }
+        | { results: TimeStepResult[] };
+    }
+  | {
+      id: string;
+      success: false;
+      error: string;
+    };
 
 export interface SimulationProgressMessage {
   type: "PROGRESS";
