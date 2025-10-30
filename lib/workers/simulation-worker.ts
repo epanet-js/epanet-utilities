@@ -206,41 +206,56 @@ async function handleRunSimulation(
   const { timePeriods } = payload;
   const results: TimeStepResult[] = [];
 
-  for (let i = 0; i < timePeriods.length; i++) {
-    const timePeriod = timePeriods[i];
+  // Sort and dedupe requested target times (ascending)
+  const targets = Array.from(new Set(timePeriods)).sort((a, b) => a - b);
+  const totalTargets = targets.length;
+  let nextTargetIdx = 0;
+  let collected = 0;
 
-    // Send progress update
-    const progressMsg: SimulationProgressMessage = {
-      type: "PROGRESS",
-      currentStep: i + 1,
-      totalSteps: timePeriods.length,
-      message: `Running simulation for timestep ${i + 1} of ${
-        timePeriods.length
-      }...`,
-    };
-    self.postMessage(progressMsg);
+  // Open/init hydraulics once
+  model.openH();
+  model.initH(InitHydOption.NoSave);
 
-    // Open hydraulics
-    model.openH();
-    model.initH(InitHydOption.NoSave);
+  try {
+    let currentTime = 0;
+    let tStep = Infinity;
 
-    try {
-      // Step to the target time
-      stepToTime(timePeriod);
+    do {
+      currentTime = model.runH();
 
-      // Extract results at this time period
-      const nodes = extractNodeResults();
-      const links = extractLinkResults();
+      // Collect results for any targets reached at or before currentTime
+      while (
+        nextTargetIdx < totalTargets &&
+        currentTime >= targets[nextTargetIdx]
+      ) {
+        const nodes = extractNodeResults();
+        const links = extractLinkResults();
+        const timePeriod = targets[nextTargetIdx];
 
-      results.push({
-        timePeriod,
-        nodes,
-        links,
-      });
-    } finally {
-      // Close hydraulics
-      model.closeH();
-    }
+        results.push({ timePeriod, nodes, links });
+        collected++;
+
+        const progressMsg: SimulationProgressMessage = {
+          type: "PROGRESS",
+          currentStep: collected,
+          totalSteps: totalTargets,
+          message: `Collected timestep ${collected} of ${totalTargets} (t=${timePeriod}s)`,
+        };
+        self.postMessage(progressMsg);
+
+        nextTargetIdx++;
+      }
+
+      // Stop early if all requested timesteps have been collected
+      if (nextTargetIdx >= totalTargets) {
+        break;
+      }
+
+      tStep = model.nextH();
+    } while (tStep > 0);
+  } finally {
+    // Close hydraulics once
+    model.closeH();
   }
 
   return { results };
