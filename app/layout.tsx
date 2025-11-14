@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-900 min-h-screen`}
+        className={`${inter.className} in-h-screen`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AppHeader />
