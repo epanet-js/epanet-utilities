@@ -32,18 +32,9 @@ export function AppHeader({
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center">
-            {!isHomePage && (
-              <Link
-                href="/"
-                className="mr-3 p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                aria-label="Back to home"
-              >
-                <Home className="h-4 w-4" />
-              </Link>
-            )}
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex gap-1 items-center">
               <LogoIconAndWordmarkIcon size={98} />
-              <span className="text-base font-semibold text-slate-900 dark:text-white">
+              <span className="text-base font-semibold text-slate-900 dark:text-white hover:text-purple-500">
                 Utilities
               </span>
             </Link>
