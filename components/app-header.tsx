@@ -68,16 +68,6 @@ export function AppHeader({
                 )}
               </button>
             )}
-            {/* GitHub link */}
-            <a
-              href={githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-            >
-              <Github className="h-4 w-4 mr-2" />
-              GitHub
-            </a>
           </div>
 
           {/* Mobile menu button */}
@@ -122,16 +112,6 @@ export function AppHeader({
                 )}
               </button>
             )}
-            {/* GitHub Link */}
-            <a
-              href={githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-3 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors w-full"
-            >
-              <Github className="h-4 w-4 mr-3" />
-              GitHub
-            </a>
           </div>
         </div>
       )}
