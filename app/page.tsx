@@ -121,6 +121,7 @@ export default function Home() {
   return (
     <main>
       <div className="container mx-auto px-4 py-16">
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_18%_-40%,rgba(147,197,253,0.3),transparent_47%),radial-gradient(circle_at_80%_-41%,rgba(216,180,254,0.35),transparent_54%)]"></div>
         <header className="mb-16 text-center">
           <h1 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-4">
             EPANET Utilities
