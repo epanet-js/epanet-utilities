@@ -171,41 +171,43 @@ export default function Home() {
   };
 
   return (
-    <main>
-      <Toaster />
+    <main className="h-[calc(100dvh_-_57px)] bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-900">
+      <div className="container mx-auto">
+        <Toaster />
 
-      <header className="mb-12 text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-3">
-          EPANET Projection Converter
-        </h1>
-        <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-          Convert your EPANET network files between different coordinate systems
-        </p>
-      </header>
+        <header className="py-12 text-center">
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-3">
+            EPANET Projection Converter
+          </h1>
+          <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+            Convert your EPANET network files between different coordinate systems
+          </p>
+        </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6">
-            <FileUploader onFileLoaded={handleFileLoaded} />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6">
+              <FileUploader onFileLoaded={handleFileLoaded} />
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6">
+              <ProjectionConverter
+                sourceProjection={sourceProjection}
+                targetProjection={targetProjection}
+                onSourceChange={handleSourceProjectionChange}
+                onTargetChange={handleTargetProjectionChange}
+                onDownloadConverted={handleDownloadConverted}
+                canConvert={!!networkData}
+                projections={projections}
+                loadingProjections={loadingProjections}
+              />
+            </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6">
-            <ProjectionConverter
-              sourceProjection={sourceProjection}
-              targetProjection={targetProjection}
-              onSourceChange={handleSourceProjectionChange}
-              onTargetChange={handleTargetProjectionChange}
-              onDownloadConverted={handleDownloadConverted}
-              canConvert={!!networkData}
-              projections={projections}
-              loadingProjections={loadingProjections}
-            />
-          </div>
-        </div>
-
-        <div className="lg:col-span-8">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 h-full">
-            <MapDisplay geoJSON={mapData} />
+          <div className="lg:col-span-8">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 h-full">
+              <MapDisplay geoJSON={mapData} />
+            </div>
           </div>
         </div>
       </div>
