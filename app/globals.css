@@ -33,6 +33,9 @@
     --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.5rem;
+
+    --color-accent-1: #d946ef;
+    --color-accent-2: #6366f1;
   }
 
   .dark {
@@ -75,3 +78,80 @@
   }
 }
 
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes rotation {
+  0% {
+    --gradient-angle: 0deg;
+  }
+  100% {
+    --gradient-angle: 360deg;
+  }
+}
+
+.utl-card {
+  background: #fff;
+  position: relative;
+}
+
+.utl-card::before,
+.utl-card::after {
+  content: "";
+  position: absolute;
+  inset: -0.125rem;
+  z-index: -1;
+  background: conic-gradient(
+    from var(--gradient-angle),
+    var(--color-accent-1),
+    var(--color-accent-2),
+    var(--color-accent-1)
+  );
+  border-radius: .875rem;
+}
+
+.utl-card::after {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.utl-card:hover::after {
+  opacity: 1;
+}
+
+.utl-card::after {
+  filter: blur(2.5rem);
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: rotation 2s linear infinite;
+  }
+}
+
+.shadow-color {
+  z-index: 1;
+  position: relative;
+}
+
+.shadow-color::before,
+.shadow-color::after {
+  filter: blur(2.5rem);
+  content: "";
+  position: absolute;
+  inset: 2rem 12rem;
+  z-index: -1;
+  background: conic-gradient(
+    from var(--gradient-angle),
+    var(--color-accent-1),
+    var(--color-accent-2),
+    var(--color-accent-2)
+  );
+  border-radius: 10rem;
+  pointer-events: none;
+}
+
+footer svg [clip-path="url(#a)"] path:first-child {
+  fill: #ddd !important
+}
