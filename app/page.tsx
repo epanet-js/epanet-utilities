@@ -1,12 +1,11 @@
 import type React from "react";
 import Link from "next/link";
 import {
-  Github,
   ExternalLink,
   ArrowRight,
   Globe,
-  Code,
-  //Database,
+  Flame,
+  Database,
 } from "lucide-react";
 import { Layers } from "lucide-react";
 
@@ -35,16 +34,26 @@ const utilities: Utility[] = [
     icon: <Globe className="h-6 w-6" />,
     color: "from-blue-500 to-cyan-500",
   },
-  //{
-  //  id: "data-extractor",
-  //  title: "EPANET Data Extractor",
-  //  description:
-  //    "Convert EPANET INP files to GIS formats (GeoJSON/Shapefile) with optional simulation results.",
-  //  link: "/data-extractor",
-  //  type: "internal",
-  //  icon: <Database className="h-6 w-6" />,
-  //  color: "from-orange-500 to-amber-500",
-  //},
+  {
+   id: "data-extractor",
+   title: "EPANET Data Extractor",
+   description:
+     "Convert EPANET INP files to GIS formats (GeoJSON/Shapefile) with optional simulation results.",
+   link: "/data-extractor",
+   type: "internal",
+   icon: <Database className="h-6 w-6" />,
+   color: "from-orange-500 to-amber-500",
+  },
+  {
+   id: "fire-flow",
+   title: "Fire flow",
+   description:
+     "Fireflow is the amount of water available in a water distribution system for firefighting.",
+   link: "/fire-flwo",
+   type: "internal",
+   icon: <Flame className="h-6 w-6" />,
+   color: "from-orange-500 to-amber-500",
+  },
   //
   //{
   //  id: "model-builder",
@@ -56,26 +65,26 @@ const utilities: Utility[] = [
   //  color: "from-green-500 to-cyan-500",
   //},
   // Example utility cards below
-  {
-    id: "epanet-model-viewer",
-    title: "epanet-js",
-    description:
-      "The EPANET you know — but modern, enhanced, and entirely in your browser.",
-    link: "https://epanetjs.com",
-    type: "external",
-    icon: <Layers className="h-6 w-6" />,
-    color: "from-emerald-500 to-teal-500",
-  },
-  {
-    id: "epanet-js",
-    title: "epanet-js Toolkit",
-    description:
-      "JavaScript library for EPANET hydraulic simulations in the browser.",
-    link: "https://github.com/modelcreate/epanet-js",
-    type: "external",
-    icon: <Code className="h-6 w-6" />,
-    color: "from-purple-500 to-indigo-500",
-  },
+  // {
+  //   id: "epanet-model-viewer",
+  //   title: "epanet-js",
+  //   description:
+  //     "The EPANET you know — but modern, enhanced, and entirely in your browser.",
+  //   link: "https://epanetjs.com",
+  //   type: "external",
+  //   icon: <Layers className="h-6 w-6" />,
+  //   color: "from-emerald-500 to-teal-500",
+  // },
+  // {
+  //   id: "epanet-js",
+  //   title: "epanet-js Toolkit",
+  //   description:
+  //     "JavaScript library for EPANET hydraulic simulations in the browser.",
+  //   link: "https://github.com/modelcreate/epanet-js",
+  //   type: "external",
+  //   icon: <Code className="h-6 w-6" />,
+  //   color: "from-purple-500 to-indigo-500",
+  // },
   // Example utility cards below
   //{
   //  id: "epanet-model-viewer",
@@ -145,20 +154,17 @@ function UtilityCard({ utility }: { utility: Utility }) {
   const isExternal = utility.type === "external";
 
   const cardContent = (
-    <div className="h-full bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md hover:translate-y-[-2px] border border-slate-100 dark:border-slate-700">
-      <div className={`h-2 bg-gradient-to-r ${utility.color}`} />
+    <div className="utl-card h-full bg-white dark:bg-slate-800 rounded-xl shadow-sm transition-all">
       <div className="p-6">
-        <div className="flex items-start mb-4">
-          <div
-            className={`p-2 rounded-lg bg-gradient-to-br ${utility.color} text-white`}
-          >
+        <div className="flex items-center flex-wrap mb-4 gap-2">
+          <div className="text-slate-600">
             {utility.icon}
           </div>
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white ml-4 mt-1">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             {utility.title}
           </h2>
         </div>
-        <p className="text-slate-600 dark:text-slate-300 mb-6 min-h-[3rem]">
+        <p className="text-slate-600 dark:text-slate-300 mb-4 md:min-h-[3rem]">
           {utility.description}
         </p>
         <div className="flex items-center text-blue-600 dark:text-blue-400 font-medium">
@@ -169,7 +175,7 @@ function UtilityCard({ utility }: { utility: Utility }) {
             </>
           ) : (
             <>
-              Open Utility
+              Open {utility.title}
               <ArrowRight className="h-4 w-4 ml-2" />
             </>
           )}
