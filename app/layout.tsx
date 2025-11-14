@@ -27,7 +27,7 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AppHeader />
-          <div className="container mx-auto px-4 py-16">{children}</div>
+            {children}
         </ThemeProvider>
       </body>
       <Script src="https://ext.masteringwater.com/latest.js" />

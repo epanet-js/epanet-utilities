@@ -8,6 +8,7 @@ import {
   Database,
 } from "lucide-react";
 import { Layers } from "lucide-react";
+import { LogoIconAndWordmarkIcon } from "@/components/app-header";
 
 // Utility types
 type UtilityType = "internal" | "external";
@@ -128,25 +129,96 @@ const utilities: Utility[] = [
 
 export default function Home() {
   return (
+    <>
     <main>
-      <div className="container mx-auto px-4 py-16">
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_18%_-40%,rgba(147,197,253,0.3),transparent_47%),radial-gradient(circle_at_80%_-41%,rgba(216,180,254,0.35),transparent_54%)]"></div>
-        <header className="mb-16 text-center">
-          <h1 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-4">
-            EPANET Utilities
-          </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-8">
-            A collection of tools to help you work with EPANET files and models
-          </p>
-        </header>
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_18%_-40%,rgba(147,197,253,.5),transparent_47%),radial-gradient(circle_at_80%_-41%,rgba(216,180,254,.5),transparent_54%)]">
+      </div>
+      <section className="relative z-20">
+        <div className="container mx-auto px-4 py-16">
+          <div className="text-center">
+            <h1 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-4">
+              EPANET Utilities
+            </h1>
+            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-20">
+              A collection of tools to help you work with EPANET files and models
+            </p>
+          </div>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-8 text-center">
+            The tools
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto mb-8">
+            {utilities.map((utility) => (
+              <UtilityCard key={utility.id} utility={utility} />
+            ))}
+          </div>
+        </div>
+      </section>
+      <section>
+        <div className="bg-[linear-gradient(to_bottom,#303139,#313547)] p-8 text-center text-white">
+          <div className="container mx-auto px-4 py-16">
+            <h2 className="text-3xl font-bold tracking-tight mb-4 text-center">
+              Model water networks instantly
+            </h2>
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">No setup or downloads &mdash; just instaant access right in your browser.</p>
+            <div className="shadow-color">
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {utilities.map((utility) => (
-            <UtilityCard key={utility.id} utility={utility} />
-          ))}
+            <picture className="block my-8">
+              <source srcSet="screenshot-light.webp" media="(prefers-color-scheme: light)"/>
+              <source srcSet="screenshot-dark.webp"  media="(prefers-color-scheme: dark)"/>
+              <img src="screenshot-light.webp" alt="Screenshot of EPANET JS app" className="mx-auto lg:max-w-3xl xl:max-w-5xl" />
+            </picture>
+            </div>
+            <a href="https://app.epanetjs.com" className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 text-white hover:bg-primary/90 h-11 rounded-md px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">Start modeling now<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-arrow-right ml-2 h-4 w-4"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer className="w-full bg-gray-950 text-primary-foreground">
+      <div className="container px-4 md:px-6">
+        <div className="py-12 sm:py-16 grid grid-cols-1 lg:grid-cols-12 gap-12">
+          <div className="lg:col-span-4 space-y-6 lg:pr-12">
+            <a href="/" className="block">
+              <LogoIconAndWordmarkIcon size={140} />
+            </a>
+          </div>
+          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-8 lg:pl-12">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white">Product</h3>
+              <nav className="flex flex-col space-y-3">
+                <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
+                <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</a>
+                <a href="#faq" className="text-gray-300 hover:text-white transition-colors">FAQ</a>
+              </nav>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white">Community</h3>
+              <nav className="flex flex-col space-y-3">
+                <a href="https://help.epanetjs.com" target="_blank" rel="noopener" className="text-gray-300 hover:text-white transition-colors">Help
+                  Center</a>
+                  <a href="https://roadmap.epanetjs.com" target="_blank" rel="noopener" className="text-gray-300 hover:text-white transition-colors">Roadmap</a>
+                  <a href="https://github.com/epanet-js/epanet-js"
+                  rel="noopener" className="text-gray-300 hover:text-white transition-colors">GitHub</a>
+                  <a href="https://epanetjs.com/blog/" className="text-gray-300 hover:text-white transition-colors">Blog</a>
+                </nav>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white">Company</h3>
+              <nav className="flex flex-col space-y-3">
+                <a href="#why-we-built-epanet-js" className="text-gray-300 hover:text-white transition-colors">About</a>
+                <a href="mailto:support@epanetjs.com" className="text-gray-300 hover:text-white transition-colors">Contact Us</a>
+                <a href="https://epanetjs.com/terms-conditions/" className="text-gray-300 hover:text-white transition-colors">Terms &amp; Conditions</a>
+                <a href="https://epanetjs.com/privacy-policy/" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</a>
+                <a href="https://epanetjs.com/cookies-policy/" className="text-gray-300 hover:text-white transition-colors">Cookies Policy</a>
+                </nav>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-slate-700 py-6">
+          <p className="text-sm text-gray-400 text-right">© 2025 Iterating Inc. All rights reserved.</p>
         </div>
       </div>
-    </main>
+    </footer>
+    </>
   );
 }
 
