@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState } from "react";
-import { Upload, FileText, AlertCircle, X } from "lucide-react";
+import { Upload, FileText, X } from "lucide-react";
 
 interface FileUploaderProps {
   onFileLoaded: (file: File | null) => void;
@@ -126,9 +126,8 @@ export function FileUploader({ onFileLoaded }: FileUploaderProps) {
       )}
 
       {error && (
-        <div className="flex items-center text-red-600 dark:text-red-400 text-sm mt-2">
-          <AlertCircle className="h-4 w-4 mr-1" />
-          <span>{error}</span>
+        <div className="p-3 mt-2 border border-red-200 rounded-md bg-red-50 text-red-700 dark:text-red-400 text-sm">
+          {error}
         </div>
       )}
     </div>
