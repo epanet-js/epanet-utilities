@@ -27,7 +27,7 @@ export function ProjectionConverter({
 }: ProjectionConverterProps) {
   return (
     <div className="space-y-2">
-      <h2 className="pt-4 pb-2 text-sm font-semibold">
+      <h2 className="py-2 text-md font-semibold">
         Projection Settings
       </h2>
 

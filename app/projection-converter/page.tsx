@@ -180,8 +180,8 @@ export default function Home() {
               EPANET Projection Converter
             </h1>
           </header>
-          <div className="p-4 space-y-6">
-            <p className="text-sm text-gray-600 dark:text-slate-300 max-w-2xl mx-auto">
+          <div className="p-4 space-y-4">
+            <p className="text-sm text-gray-600 dark:text-slate-300">
               Convert your EPANET network files between different coordinate systems
             </p>
             <FileUploader onFileLoaded={handleFileLoaded} />

@@ -83,7 +83,7 @@ export function ProjectionInputSearch({
       }}
     >
       <div className="flex flex-row gap-4 items-center">
-        <p className="text-sm text-gray-500 text-nowrap">Select projection</p>
+        <p className="text-sm text-gray-500 dark:text-gray-300 text-nowrap">Select projection</p>
         <button
           className={cn(
             "flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800",
@@ -101,7 +101,7 @@ export function ProjectionInputSearch({
           {value ? (
             value.name
           ) : (
-            <span className="text-slate-500 dark:text-slate-400">
+            <span className="text-gray-500 dark:text-slate-400">
               Projection...
             </span>
           )}

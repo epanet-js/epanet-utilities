@@ -210,7 +210,7 @@ export function MapDisplay({ geoJSON, projection }: MapDisplayProps) {
         {MAPBOX_TOKEN === "pk.placeholder.token" ? (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-700">
             <div className="text-center p-6">
-              <p className="text-slate-600 dark:text-slate-300 mb-2">
+              <p className="text-gray-600 dark:text-slate-300 mb-2">
                 Map placeholder - Mapbox token required
               </p>
               <p className="text-xs text-gray-500 dark:text-slate-400">

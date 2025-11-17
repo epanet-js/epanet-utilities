@@ -59,7 +59,7 @@ export function FileUploader({ onFileLoaded }: FileUploaderProps) {
 
   return (
     <div className="space-y-2">
-      <h2 className="text-sm font-semibold">
+      <h2 className="py-2 text-md font-semibold">
         Upload EPANET File
       </h2>
 
@@ -105,8 +105,8 @@ export function FileUploader({ onFileLoaded }: FileUploaderProps) {
           </div>
         </div>
       ) : (
-        <div className="flex items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-          <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
+        <div className="flex items-start p-3 border border-blue-300 dark:border-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+          <FileText className="h-4 w-4 text-blue-600 dark:text-blue-200 mr-2" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">
               {file.name}
@@ -117,10 +117,10 @@ export function FileUploader({ onFileLoaded }: FileUploaderProps) {
           </div>
           <button
             onClick={clearFile}
-            className="ml-4 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"
+            className="ml-4 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-full"
             aria-label="Remove file"
           >
-            <X className="h-5 w-5 text-gray-500 dark:text-slate-400" />
+            <X className="h-4 w-4 text-gray-500 dark:text-slate-400" />
           </button>
         </div>
       )}
