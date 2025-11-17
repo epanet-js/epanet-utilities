@@ -68,7 +68,7 @@ export function FileUploader({ onFileLoaded }: FileUploaderProps) {
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             isDragging
               ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
-              : "border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30"
+              : "border-gray-300 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/30"
           }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
