@@ -34,7 +34,7 @@ export function AppHeader({
           <div className="flex items-center">
             <Link href="/" className="flex gap-1 items-center">
               <LogoIconAndWordmarkIcon size={98} />
-              <span className="text-base font-semibold text-slate-900 dark:text-white hover:text-purple-500">
+              <span className="text-base font-semibold text-gray-900 hover:text-purple-500">
                 Utilities
               </span>
             </Link>
@@ -48,7 +48,7 @@ export function AppHeader({
                 onClick={() =>
                   setTheme(resolvedTheme === "dark" ? "light" : "dark")
                 }
-                className="p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                className="p-2 rounded-md text-gray-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
                 {resolvedTheme === "dark" ? (
                   <Sun className="h-5 w-5" />
@@ -63,7 +63,7 @@ export function AppHeader({
           <div className="md:hidden">
             <button
               type="button"
-              className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              className="p-1.5 rounded-md text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -86,7 +86,7 @@ export function AppHeader({
                 onClick={() =>
                   setTheme(resolvedTheme === "dark" ? "light" : "dark")
                 }
-                className="flex items-center text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-3 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors w-full"
+                className="flex items-center text-sm text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white p-3 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors w-full"
               >
                 {resolvedTheme === "dark" ? (
                   <>

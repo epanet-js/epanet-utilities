@@ -213,7 +213,7 @@ export function MapDisplay({ geoJSON, projection }: MapDisplayProps) {
               <p className="text-slate-600 dark:text-slate-300 mb-2">
                 Map placeholder - Mapbox token required
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-gray-500 dark:text-slate-400">
                 Add your Mapbox token to see the actual map
               </p>
             </div>

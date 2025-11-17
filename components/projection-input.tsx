@@ -55,7 +55,7 @@ export function ProjectionInput({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+      <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
         {label}
       </label>
 
@@ -94,13 +94,13 @@ export function ProjectionInput({
               {!prjFile ? (
                 <div className="flex flex-col items-center justify-center space-y-3">
                   <div className="p-3 bg-slate-100 dark:bg-slate-700 rounded-full">
-                    <Upload className="h-6 w-6 text-slate-500 dark:text-slate-400" />
+                    <Upload className="h-6 w-6 text-gray-500 dark:text-slate-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <p className="text-sm font-medium text-gray-700 dark:text-slate-300">
                       Drop your PRJ file here
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                       or click to browse
                     </p>
                   </div>
@@ -115,7 +115,7 @@ export function ProjectionInput({
                   />
                   <label
                     htmlFor="prj-upload"
-                    className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-white bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-100 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors cursor-pointer"
+                    className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded-md hover:bg-gray-100 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors cursor-pointer"
                   >
                     Select PRJ File
                   </label>
@@ -125,10 +125,10 @@ export function ProjectionInput({
                   <div className="flex items-center">
                     <Upload className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
                     <div className="text-left">
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <p className="text-sm font-medium text-gray-900">
                         {prjFile.name}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                      <p className="text-xs text-gray-500 dark:text-slate-400">
                         {(prjFile.size / 1024).toFixed(2)} KB
                       </p>
                     </div>
@@ -137,7 +137,7 @@ export function ProjectionInput({
                     onClick={clearPRJFile}
                     className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"
                   >
-                    <X className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                    <X className="h-5 w-5 text-gray-500 dark:text-slate-400" />
                   </button>
                 </div>
               )}
@@ -160,9 +160,9 @@ export function ProjectionInput({
                 onValueChange(manualProjection);
               }}
               placeholder="Enter proj4 string or WKT definition..."
-              className="w-full h-32 px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
+              className="w-full h-32 px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 placeholder-slate-500 dark:placeholder-slate-400"
             />
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-gray-500 dark:text-slate-400">
               Enter a valid proj4 string or WKT projection definition
             </p>
           </div>

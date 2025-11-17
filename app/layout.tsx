@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} in-h-screen`}
+        className={`${inter.className} in-h-screen text-gray-900 dark:text-white`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AppHeader />

@@ -136,14 +136,14 @@ export default function Home() {
       <section className="relative z-20">
         <div className="container max-w-5xl mx-auto px-4 py-16">
           <div className="text-center">
-            <h1 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-4">
+            <h1 className="text-5xl font-bold tracking-tight text-slate-900 mb-4">
               EPANET Utilities
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-20">
               A collection of tools to help you work with EPANET files and models
             </p>
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-8 text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-8 text-center">
             The tools
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto mb-8">
@@ -232,7 +232,7 @@ function UtilityCard({ utility }: { utility: Utility }) {
           <div className="text-slate-600">
             {utility.icon}
           </div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h2 className="text-lg font-semibold text-slate-900">
             {utility.title}
           </h2>
         </div>

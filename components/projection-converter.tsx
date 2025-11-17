@@ -27,7 +27,7 @@ export function ProjectionConverter({
 }: ProjectionConverterProps) {
   return (
     <div className="space-y-2">
-      <h2 className="pt-4 pb-2 text-sm font-semibold text-slate-900 dark:text-white">
+      <h2 className="pt-4 pb-2 text-sm font-semibold">
         Projection Settings
       </h2>
 
@@ -58,7 +58,7 @@ export function ProjectionConverter({
           disabled={!canConvert || !sourceProjection || !targetProjection}
           className={`w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium ${
             !canConvert || !sourceProjection || !targetProjection
-              ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+              ? "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-500 cursor-not-allowed"
               : "bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           }`}
         >
