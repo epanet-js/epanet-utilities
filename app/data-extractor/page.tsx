@@ -399,7 +399,7 @@ export default function DataExtractorPage() {
   };
 
   return (
-    <main className="h-[calc(100dvh_-_57px)] bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-900">
+    <main className="">
       <SimulationModal
         open={isSimulating || isExporting}
         mode={isExporting ? "export" : "simulation"}
@@ -411,45 +411,36 @@ export default function DataExtractorPage() {
             : simulationProgress.message
         }
       />
-      <div className="container mx-auto">
-        <header className="py-12 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-3">
-            EPANET Data Extractor
-          </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            Convert your EPANET network files to GIS formats with optional
-            simulation results
-          </p>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6">
-              <FileUploader onFileLoaded={handleFileLoaded} />
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6">
-              <DataExtractor
-                exportFormat={exportFormat}
-                onExportFormatChange={setExportFormat}
-                includeResults={includeResults}
-                onIncludeResultsChange={setIncludeResults}
-                selectedTime={selectedTime}
-                onSelectedTimeChange={setSelectedTime}
-                exportAllTimesteps={exportAllTimesteps}
-                onExportAllTimestepsChange={setExportAllTimesteps}
-                onDownload={handleDownload}
-                canDownload={!!networkData}
-                timestepOptions={timestepOptions}
-              />
-            </div>
+      <div className="h-[calc(100dvh_-_57px)] grid grid-cols-1 lg:grid-cols-[400px_1fr]">
+        <div className="border-r border-gray-300 dark:border-gray-600">
+          <header className="p-4 border-b border-gray-300 dark:border-slate-600">
+            <h1 className="text-md font-bold tracking-tight">
+              EPANET Data Extractor
+            </h1>
+          </header>
+          <div className="p-4 space-y-4">
+            <p className="text-sm text-gray-600 dark:text-slate-300">
+              Convert your EPANET network files to GIS formats with optional
+              simulation results
+            </p>
+            <FileUploader onFileLoaded={handleFileLoaded} />
+            <DataExtractor
+              exportFormat={exportFormat}
+              onExportFormatChange={setExportFormat}
+              includeResults={includeResults}
+              onIncludeResultsChange={setIncludeResults}
+              selectedTime={selectedTime}
+              onSelectedTimeChange={setSelectedTime}
+              exportAllTimesteps={exportAllTimesteps}
+              onExportAllTimestepsChange={setExportAllTimesteps}
+              onDownload={handleDownload}
+              canDownload={!!networkData}
+              timestepOptions={timestepOptions}
+            />
           </div>
-
-          <div className="lg:col-span-8">
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 h-full">
-              <MapDisplay geoJSON={mapData} />
-            </div>
-          </div>
+        </div>
+        <div className="map">
+          <MapDisplay geoJSON={mapData} />
         </div>
       </div>
     </main>

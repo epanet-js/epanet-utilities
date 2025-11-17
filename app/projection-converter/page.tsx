@@ -198,7 +198,7 @@ export default function Home() {
           </div>
         </div>
         <div className="MAP">
-            <MapDisplay geoJSON={mapData} />
+          <MapDisplay geoJSON={mapData} />
         </div>
       </div>
     </main>
