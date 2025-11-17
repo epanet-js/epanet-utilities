@@ -29,7 +29,7 @@ export function AppHeader({
 
   return (
     <header className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-indigo-200 dark:border-slate-700 z-50 relative">
-      <div className="container mx-auto px-4">
+      <div className="container max-w-5xl mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center">
             <Link href="/" className="flex gap-1 items-center">
