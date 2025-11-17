@@ -29,12 +29,12 @@ export function AppHeader({
 
   return (
     <header className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-gray-300 dark:border-slate-700 z-50 relative">
-      <div className="container max-w-5xl mx-auto px-4">
+      <div className={`${isHomePage ? "max-w-5xl container mx-auto" : ""} px-4`}>
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center">
-            <Link href="/" className="flex gap-1 items-center">
+            <Link href="/" className="flex gap-1 items-center text-gray-900 dark:text-gray-300 hover:text-purple-500">
               <LogoIconAndWordmarkIcon size={98} />
-              <span className="text-base font-semibold text-gray-900 dark:text-gray-300 hover:text-purple-500">
+              <span className="text-base font-semibold">
                 Utilities
               </span>
             </Link>
