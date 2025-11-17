@@ -94,7 +94,6 @@
 }
 
 .utl-card {
-  background: #fff;
   position: relative;
 }
 
@@ -118,9 +117,13 @@
 }
 
 .utl-card::after {
-  background: white;
+  background: #fff;
   inset: -0.125rem;
   border-radius: .75rem;
+}
+
+.dark .utl-card::after {
+  background: #0f172a;
 }
 
 .utl-card:hover {

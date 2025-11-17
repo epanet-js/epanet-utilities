@@ -34,7 +34,7 @@ export function AppHeader({
           <div className="flex items-center">
             <Link href="/" className="flex gap-1 items-center">
               <LogoIconAndWordmarkIcon size={98} />
-              <span className="text-base font-semibold text-gray-900 hover:text-purple-500">
+              <span className="text-base font-semibold text-gray-900 dark:text-gray-300 hover:text-purple-500">
                 Utilities
               </span>
             </Link>

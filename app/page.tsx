@@ -136,14 +136,14 @@ export default function Home() {
       <section className="relative z-20">
         <div className="container max-w-5xl mx-auto px-4 py-16">
           <div className="text-center">
-            <h1 className="text-5xl font-bold tracking-tight text-slate-900 mb-4">
+            <h1 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-slate-200 mb-4">
               EPANET Utilities
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-20">
               A collection of tools to help you work with EPANET files and models
             </p>
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-8 text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-200 mb-8 text-center">
             The tools
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto mb-8">
@@ -229,14 +229,14 @@ function UtilityCard({ utility }: { utility: Utility }) {
     <div className="utl-card h-full rounded-xl transition-all">
       <div className="p-6">
         <div className="flex items-center flex-wrap mb-4 gap-2">
-          <div className="text-slate-600">
+          <div className="text-slate-600 dark:text-slate-400">
             {utility.icon}
           </div>
-          <h2 className="text-lg font-semibold text-slate-900">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-300">
             {utility.title}
           </h2>
         </div>
-        <p className="text-slate-600 dark:text-slate-300 mb-4 md:min-h-[3rem]">
+        <p className="text-slate-600 dark:text-slate-400 mb-4 md:min-h-[3rem]">
           {utility.description}
         </p>
         <div className="flex items-center text-blue-600 dark:text-blue-400 font-medium">
