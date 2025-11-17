@@ -102,34 +102,36 @@
 .utl-card::after {
   content: "";
   position: absolute;
-  inset: -0.125rem;
+  inset: -0.25rem;
   z-index: -1;
+  background: #64748b;
+  border-radius: .875rem;
+}
+
+.utl-card:hover::before {
   background: conic-gradient(
     from var(--gradient-angle),
     var(--color-accent-1),
     var(--color-accent-2),
     var(--color-accent-1)
   );
-  border-radius: .875rem;
 }
 
 .utl-card::after {
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+  background: white;
+  inset: -0.125rem;
+  border-radius: .75rem;
 }
 
-.utl-card:hover::after {
-  opacity: 1;
+.utl-card:hover {
+  background-color: #fafafa;
+  transform: translateY(-.25rem);
+  box-shadow:
+    0 .25rem 1rem -.25rem rgba(0, 0, 75, 0.5),
+    0 1rem 3rem -2rem rgba(0, 0, 75, 0.5);
 }
 
-.utl-card::after {
-  filter: blur(2.5rem);
-
-  @media (prefers-reduced-motion: no-preference) {
-    animation: rotation 2s linear infinite;
-  }
-}
-
+/*
 .shadow-color {
   z-index: 1;
   position: relative;
@@ -155,3 +157,4 @@
 footer svg [clip-path="url(#a)"] path:first-child {
   fill: #ddd !important
 }
+*/
