@@ -28,7 +28,7 @@ export function AppHeader({
   }, []);
 
   return (
-    <header className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-indigo-200 dark:border-slate-700 z-50 relative">
+    <header className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-gray-300 dark:border-slate-700 z-50 relative">
       <div className="container max-w-5xl mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center">

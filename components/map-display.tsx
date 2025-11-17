@@ -205,14 +205,8 @@ export function MapDisplay({ geoJSON, projection }: MapDisplayProps) {
   }, [processedGeoJSON, mapLoaded]);
 
   return (
-    <div className="space-y-4 h-full flex flex-col">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-          Network Visualization
-        </h2>
-      </div>
-
-      <div className="relative flex-1 min-h-[400px] lg:min-h-[600px] rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+    <div className="bg-slate-200 space-y-4 h-full flex flex-col">
+      <div className="relative flex-1 min-h-[400px] lg:min-h-[600px] overflow-hidden">
         {MAPBOX_TOKEN === "pk.placeholder.token" ? (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-700">
             <div className="text-center p-6">

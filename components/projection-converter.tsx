@@ -26,8 +26,8 @@ export function ProjectionConverter({
   loadingProjections,
 }: ProjectionConverterProps) {
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+    <div className="space-y-2">
+      <h2 className="pt-4 pb-2 text-sm font-semibold text-slate-900 dark:text-white">
         Projection Settings
       </h2>
 
@@ -41,13 +41,6 @@ export function ProjectionConverter({
           projections={projections}
           loading={loadingProjections}
         />
-
-        <div className="flex justify-center">
-          <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-full">
-            <ArrowDown className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-          </div>
-        </div>
-
         <ProjectionInput
           value={targetProjection}
           onValueChange={onTargetChange}
@@ -63,10 +56,10 @@ export function ProjectionConverter({
         <button
           onClick={onDownloadConverted}
           disabled={!canConvert || !sourceProjection || !targetProjection}
-          className={`w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white ${
+          className={`w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium ${
             !canConvert || !sourceProjection || !targetProjection
-              ? "bg-slate-400 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           }`}
         >
           <Download className="h-4 w-4 mr-2" />
