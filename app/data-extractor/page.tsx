@@ -33,6 +33,7 @@ import {
   createZipBundle,
 } from "@/lib/export-csv";
 import { saveAs } from "file-saver";
+import { AppHeader } from "@/components/app-header";
 
 type ExportFormat = "geojson" | "shapefile";
 
@@ -399,7 +400,7 @@ export default function DataExtractorPage() {
   };
 
   return (
-    <main className="">
+    <>
       <SimulationModal
         open={isSimulating || isExporting}
         mode={isExporting ? "export" : "simulation"}
@@ -411,14 +412,17 @@ export default function DataExtractorPage() {
             : simulationProgress.message
         }
       />
-      <div className="h-[calc(100dvh_-_57px)] grid grid-cols-1 lg:grid-cols-[400px_1fr]">
-        <div className="border-r border-gray-300 dark:border-gray-600 overflow-y-auto">
-          <header className="p-4 border-b border-gray-300 dark:border-slate-600">
+      <div className="h-dvh grid
+      grid-rows-[auto_1fr_1fr] md:grid-rows-[auto_1fr]
+      grid-cols-1 md:grid-cols-2 lg:grid-cols-[400px_1fr]">
+        <AppHeader />
+        <aside className="border-b-4 md:border-b-0 border-r border-gray-300 dark:border-gray-600 overflow-y-auto">
+          <div className="p-4 border-b border-gray-300 dark:border-slate-600">
             <h1 className="text-md font-bold tracking-tight">
               EPANET Data Extractor
             </h1>
-          </header>
-          <div className="p-4 space-y-4 flex flex-col h-[calc(100dvh_-_114px)]">
+          </div>
+          <div className="p-4 space-y-4 flex flex-col md:h-[calc(100dvh_-_114px)]">
             <p className="text-sm text-gray-600 dark:text-slate-300">
               Convert your EPANET network files to GIS formats with optional
               simulation results
@@ -438,11 +442,9 @@ export default function DataExtractorPage() {
               timestepOptions={timestepOptions}
             />
           </div>
-        </div>
-        <div className="map">
-          <MapDisplay geoJSON={mapData} />
-        </div>
+        </aside>
+        <MapDisplay geoJSON={mapData} />
       </div>
-    </main>
+    </>
   );
 }

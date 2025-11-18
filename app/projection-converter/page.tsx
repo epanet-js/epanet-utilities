@@ -19,6 +19,7 @@ import { isLikelyLatLng } from "@/lib/check-projection";
 import { approximateReprojectToLatLngSingle } from "@/lib/approx-reproject";
 
 import { toGeoJson, ToGeoJsonResult } from "@/lib/epanet-geojson";
+import { AppHeader } from "@/components/app-header";
 
 export default function Home() {
   const [networkData, setNetworkData] = useState<NetworkData | null>(null);
@@ -171,16 +172,19 @@ export default function Home() {
   };
 
   return (
-    <main className="">
+    <>
       <Toaster />
-      <div className="h-[calc(100dvh_-_57px)] grid grid-cols-1 lg:grid-cols-[400px_1fr]">
-        <div className="border-r border-gray-300 dark:border-gray-600 overflow-y-auto">
-          <header className="p-4 border-b border-gray-300 dark:border-slate-600">
+      <div className="h-dvh grid
+      grid-rows-[auto_1fr_1fr] md:grid-rows-[auto_1fr]
+      grid-cols-1 md:grid-cols-2 lg:grid-cols-[400px_1fr]">
+        <AppHeader />
+        <aside className="border-b-4 md:border-b-0 border-r border-gray-300 dark:border-gray-600 overflow-y-auto">
+          <div className="p-4 border-b border-gray-300 dark:border-slate-600">
             <h1 className="text-md font-bold tracking-tight">
               EPANET Projection Converter
             </h1>
-          </header>
-          <div className="p-4 space-y-4 flex flex-col h-[calc(100dvh_-_114px)]">
+          </div>
+          <div className="p-4 space-y-4 flex flex-col md:h-[calc(100dvh_-_114px)]">
             <p className="text-sm text-gray-600 dark:text-slate-300">
               Convert your EPANET network files between different coordinate systems
             </p>
@@ -196,11 +200,9 @@ export default function Home() {
               loadingProjections={loadingProjections}
             />
           </div>
-        </div>
-        <div className="MAP">
-          <MapDisplay geoJSON={mapData} />
-        </div>
+        </aside>
+        <MapDisplay geoJSON={mapData} />
       </div>
-    </main>
+    </>
   );
 }

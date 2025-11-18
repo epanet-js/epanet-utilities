@@ -26,7 +26,6 @@ export default function RootLayout({
         className={`${inter.className} in-h-screen text-gray-900 dark:text-white overflow-hidden h-dvh`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AppHeader />
             {children}
         </ThemeProvider>
       </body>
