@@ -174,13 +174,13 @@ export default function Home() {
     <main className="">
       <Toaster />
       <div className="h-[calc(100dvh_-_57px)] grid grid-cols-1 lg:grid-cols-[400px_1fr]">
-        <div className="border-r border-gray-300 dark:border-gray-600">
+        <div className="border-r border-gray-300 dark:border-gray-600 overflow-y-auto">
           <header className="p-4 border-b border-gray-300 dark:border-slate-600">
             <h1 className="text-md font-bold tracking-tight">
               EPANET Projection Converter
             </h1>
           </header>
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-4 flex flex-col h-[calc(100dvh_-_114px)]">
             <p className="text-sm text-gray-600 dark:text-slate-300">
               Convert your EPANET network files between different coordinate systems
             </p>

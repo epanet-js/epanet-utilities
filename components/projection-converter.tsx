@@ -26,7 +26,7 @@ export function ProjectionConverter({
   loadingProjections,
 }: ProjectionConverterProps) {
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col flex-grow">
       <h2 className="py-2 text-md font-semibold">
         Projection Settings
       </h2>
@@ -52,7 +52,7 @@ export function ProjectionConverter({
         />
       </div>
 
-      <div className="pt-4">
+      <div className="py-4 mt-auto">
         <button
           onClick={onDownloadConverted}
           disabled={!canConvert || !sourceProjection || !targetProjection}

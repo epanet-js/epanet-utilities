@@ -42,7 +42,7 @@ export function DataExtractor({
   const hasTimesteps = timestepOptions.length > 0;
 
   return (
-    <div className="">
+    <div className="flex flex-col flex-grow">
       <h2 className="py-2 text-md font-semibold">
         Export Options
       </h2>
@@ -151,7 +151,7 @@ export function DataExtractor({
       </div>
 
       {/* Download Button */}
-      <div className="pt-4">
+      <div className="py-4 mt-auto">
         <button
           onClick={onDownload}
           disabled={!canDownload}

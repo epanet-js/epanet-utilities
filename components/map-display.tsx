@@ -206,7 +206,7 @@ export function MapDisplay({ geoJSON, projection }: MapDisplayProps) {
 
   return (
     <div className="bg-slate-200 space-y-4 h-full flex flex-col">
-      <div className="relative flex-1 min-h-[400px] lg:min-h-[600px] overflow-hidden">
+      <div className="relative flex-1 min-h-[400px] lg:h-[calc(100dvh_-_57px)] overflow-hidden">
         {MAPBOX_TOKEN === "pk.placeholder.token" ? (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-700">
             <div className="text-center p-6">
@@ -219,7 +219,7 @@ export function MapDisplay({ geoJSON, projection }: MapDisplayProps) {
             </div>
           </div>
         ) : (
-          <div ref={mapContainer} className="absolute inset-0 h-full w-full" />
+          <div ref={mapContainer} className="absolute inset-0 h-[calc(100dvh_-_57px)] w-full" />
         )}
       </div>
     </div>
