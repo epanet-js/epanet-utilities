@@ -36,6 +36,10 @@
 
     --color-accent-1: #d946ef;
     --color-accent-2: #6366f1;
+
+    --epanetjs-primary: #a855f7;
+
+    accent-color: var(--epanetjs-primary);
   }
 
   .dark {
@@ -78,21 +82,6 @@
   }
 }
 
-@property --gradient-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@keyframes rotation {
-  0% {
-    --gradient-angle: 0deg;
-  }
-  100% {
-    --gradient-angle: 360deg;
-  }
-}
-
 .utl-card {
   position: relative;
 }
@@ -109,7 +98,7 @@
 
 .utl-card:hover::before {
   background: conic-gradient(
-    from var(--gradient-angle),
+    from 0deg,
     var(--color-accent-1),
     var(--color-accent-2),
     var(--color-accent-1)
@@ -133,31 +122,3 @@
     0 .25rem 1rem -.25rem rgba(0, 0, 75, 0.5),
     0 1rem 3rem -2rem rgba(0, 0, 75, 0.5);
 }
-
-/*
-.shadow-color {
-  z-index: 1;
-  position: relative;
-}
-
-.shadow-color::before,
-.shadow-color::after {
-  filter: blur(2.5rem);
-  content: "";
-  position: absolute;
-  inset: 2rem 12rem;
-  z-index: -1;
-  background: conic-gradient(
-    from var(--gradient-angle),
-    var(--color-accent-1),
-    var(--color-accent-2),
-    var(--color-accent-2)
-  );
-  border-radius: 10rem;
-  pointer-events: none;
-}
-
-footer svg [clip-path="url(#a)"] path:first-child {
-  fill: #ddd !important
-}
-*/
