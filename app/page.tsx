@@ -144,9 +144,6 @@ export default function Home() {
               A collection of tools to help you work with EPANET files and models
             </p>
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-200 mb-8 text-center">
-            The tools
-          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto mb-8">
             {utilities.map((utility) => (
               <UtilityCard key={utility.id} utility={utility} />
