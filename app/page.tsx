@@ -8,7 +8,7 @@ import {
   Database,
 } from "lucide-react";
 import { Layers } from "lucide-react";
-import { LogoIconAndWordmarkIcon } from "@/components/app-header";
+import { AppHeader, LogoIconAndWordmarkIcon } from "@/components/app-header";
 
 // Utility types
 type UtilityType = "internal" | "external";
@@ -130,6 +130,7 @@ const utilities: Utility[] = [
 export default function Home() {
   return (
     <>
+    <AppHeader />
     <main>
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_18%_-40%,rgba(147,197,253,.5),transparent_47%),radial-gradient(circle_at_80%_-41%,rgba(216,180,254,.5),transparent_54%)]">
       </div>
