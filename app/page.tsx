@@ -240,7 +240,9 @@ function UtilityCard({ utility }: { utility: Utility }) {
   const isExternal = utility.type === "external";
 
   const cardContent = (
-    <div className="utl-card h-full rounded-xl transition-all">
+    <div className="
+    h-full bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-lg hover:translate-y-[-2px] border border-slate-200 dark:border-slate-700
+    ">
       <div className="p-6">
         <div className="flex items-center flex-wrap mb-4 gap-2">
           <div className="text-slate-600 dark:text-slate-400">
