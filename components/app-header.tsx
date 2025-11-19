@@ -108,7 +108,7 @@ export function AppHeader({
   );
 }
 
-export const LogoIconAndWordmarkIcon: React.FC<{ size: number, negative: boolean }> = ({
+export const LogoIconAndWordmarkIcon: React.FC<{ size: number, negative?: boolean }> = ({
   size, negative
 }) => {
   return (
