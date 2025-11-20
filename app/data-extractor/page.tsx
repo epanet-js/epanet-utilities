@@ -416,14 +416,14 @@ export default function DataExtractorPage() {
       grid-rows-[auto_1fr_1fr] md:grid-rows-[auto_1fr]
       grid-cols-1 md:grid-cols-2 lg:grid-cols-[400px_1fr]">
         <AppHeader />
-        <aside className="border-b-4 md:border-b-0 border-r border-gray-300 dark:border-gray-600 overflow-y-auto">
-          <div className="p-4 border-b border-gray-300 dark:border-slate-600">
+        <aside className="border-b-4 md:border-b-0 border-r border-gray-300 overflow-y-auto">
+          <div className="p-4 border-b border-gray-300">
             <h1 className="text-md font-bold tracking-tight">
               EPANET Data Extractor
             </h1>
           </div>
           <div className="p-4 space-y-4 flex flex-col md:h-[calc(100dvh_-_114px)]">
-            <p className="text-sm text-gray-600 dark:text-slate-300">
+            <p className="text-sm text-gray-600">
               Convert your EPANET network files to GIS formats with optional
               simulation results
             </p>

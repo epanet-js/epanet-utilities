@@ -28,82 +28,19 @@ export function AppHeader({
   }, []);
 
   return (
-    <header className="col-span-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-gray-300 dark:border-slate-700 z-50 relative">
+    <header className="col-span-2 bg-white/80 backdrop-blur-sm border-b border-gray-300 z-50 relative">
       <div className={`${isHomePage ? "max-w-5xl container mx-auto" : ""} px-4`}>
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center">
-            <Link href="/" className="flex gap-1 items-center text-gray-900 dark:text-gray-300 hover:text-purple-500">
+            <Link href="/" className="flex gap-1 items-center text-gray-900 hover:text-purple-500">
               <LogoIconAndWordmarkIcon size={98} />
               <span className="text-base font-semibold">
                 Utilities
               </span>
             </Link>
           </div>
-
-          {/* Desktop navigation */}
-          <div className="hidden md:flex items-center space-x-4">
-            {/* Dark mode toggle button */}
-            {mounted && (
-              <button
-                onClick={() =>
-                  setTheme(resolvedTheme === "dark" ? "light" : "dark")
-                }
-                className="p-2 rounded-md text-gray-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              >
-                {resolvedTheme === "dark" ? (
-                  <Sun className="h-5 w-5" />
-                ) : (
-                  <Moon className="h-5 w-5" />
-                )}
-              </button>
-            )}
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              type="button"
-              className="p-1.5 rounded-md text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <X className="h-5 w-5" aria-hidden="true" />
-              ) : (
-                <Menu className="h-5 w-5" aria-hidden="true" />
-              )}
-            </button>
-          </div>
         </div>
       </div>
-
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 py-2 absolute w-full shadow-md">
-          <div className="container mx-auto px-4 space-y-1">
-            {/* Dark mode toggle for mobile */}
-            {mounted && (
-              <button
-                onClick={() =>
-                  setTheme(resolvedTheme === "dark" ? "light" : "dark")
-                }
-                className="flex items-center text-sm text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white p-3 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors w-full"
-              >
-                {resolvedTheme === "dark" ? (
-                  <>
-                    <Sun className="h-4 w-4 mr-3" />
-                    Light Mode
-                  </>
-                ) : (
-                  <>
-                    <Moon className="h-4 w-4 mr-3" />
-                    Dark Mode
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
     </header>
   );
 }

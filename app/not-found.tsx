@@ -7,16 +7,16 @@ export default function NotFound() {
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_18%_-40%,rgba(147,197,253,0.3),transparent_47%),radial-gradient(circle_at_80%_-41%,rgba(216,180,254,0.35),transparent_54%)]"></div>
       <div className="text-center p-8 max-w-md">
         <div className="mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
-            <span className="text-5xl font-bold text-slate-400 dark:text-slate-500">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-slate-100 mb-4">
+            <span className="text-5xl font-bold text-slate-400">
               404
             </span>
           </div>
         </div>
-        <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200 mb-4">
+        <h2 className="text-2xl font-semibold text-slate-800 mb-4">
           Page Not Found
         </h2>
-        <p className="text-slate-600 dark:text-slate-300 mb-8">
+        <p className="text-slate-600 mb-8">
           The page you are looking for doesn&apos;t exist or has been moved.
         </p>
         <Link

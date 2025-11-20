@@ -83,12 +83,12 @@ export function ProjectionInputSearch({
       }}
     >
       <div className="flex flex-row gap-4 items-center">
-        <p className="text-sm text-gray-500 dark:text-gray-300 text-nowrap">Select projection</p>
+        <p className="text-sm text-gray-500 text-nowrap">Select projection</p>
         <button
           className={cn(
-            "flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800",
-            "hover:bg-gray-100 dark:hover:bg-slate-700/50",
-            "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900",
+            "flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm",
+            "hover:bg-gray-100",
+            "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
           )}
           onClick={() => {
             setOpen(!open);
@@ -101,7 +101,7 @@ export function ProjectionInputSearch({
           {value ? (
             value.name
           ) : (
-            <span className="text-gray-500 dark:text-slate-400">
+            <span className="text-gray-500">
               Projection...
             </span>
           )}
@@ -110,19 +110,19 @@ export function ProjectionInputSearch({
       </div>
       {open && (
         <div className="relative mt-2">
-          <div className="absolute top-0 z-50 w-full rounded-sm border border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800">
+          <div className="absolute top-0 z-50 w-full rounded-sm border border-slate-200 bg-white shadow-md">
             <CommandInput
               ref={inputRef}
               placeholder={placeholder}
               value={searchQuery}
               onValueChange={setSearchQuery}
-              className="w-full border-0 border-b border-gray-200 px-3 py-2 text-sm dark:border-slate-700"
+              className="w-full border-0 border-b border-gray-200 px-3 py-2 text-sm"
             />
             <CommandList>
               {loading && (
                 <CommandLoading>Loading projections...</CommandLoading>
               )}
-              <CommandEmpty className="py-6 text-center text-sm text-gray-500 dark:text-slate-400">
+              <CommandEmpty className="py-6 text-center text-sm text-gray-500">
                 No projection found.
               </CommandEmpty>
               <CommandGroup className="max-h-60 overflow-auto p-1 ">
@@ -144,11 +144,11 @@ export function ProjectionInputSearch({
                         handleProjectionSelect(proj);
                       }
                     }}
-                    className="flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-purple-100 dark:hover:bg-slate-700"
+                    className="flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-purple-100"
                   >
                     <div>
                       <div className="font-medium">{proj.name}</div>
-                      <div className="text-xs text-gray-500 dark:text-slate-400 truncate overflow-hidden whitespace-nowrap max-w-[280px]">
+                      <div className="text-xs text-gray-500 truncate overflow-hidden whitespace-nowrap max-w-[280px]">
                         {proj.code}
                       </div>
                     </div>

@@ -51,20 +51,20 @@ export function DataExtractor({
         {/* Export Format Selection */}
         <div className="space-y-2">
           <div className="flex flex-row gap-4 items-center">
-            <label className="text-sm text-gray-500 dark:text-gray-300 text-nowrap">
+            <label className="text-sm text-gray-500 text-nowrap">
               Export Format
             </label>
             <div className="relative flex-grow">
               <button
                 type="button"
                 onClick={() => setIsFormatDropdownOpen(!isFormatDropdownOpen)}
-                className="w-full flex items-center justify-between px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full flex items-center justify-between px-3 py-2 text-sm border border-slate-300 rounded-md bg-white text-slate-900 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {formatOptions.find((opt) => opt.value === exportFormat)?.label}
                 <ChevronDown className="h-4 w-4 text-slate-500" />
               </button>
               {isFormatDropdownOpen && (
-                <div className="absolute z-10 top-10 p-1 mt-1 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg">
+                <div className="absolute z-10 top-10 p-1 mt-1 bg-white border border-slate-300 rounded-md shadow-lg">
                   {formatOptions.map((option) => (
                     <button
                       key={option.value}
@@ -73,7 +73,7 @@ export function DataExtractor({
                         onExportFormatChange(option.value as ExportFormat);
                         setIsFormatDropdownOpen(false);
                       }}
-                      className="w-full text-left px-3 py-2 text-sm text-slate-900 dark:text-white hover:bg-purple-100 dark:hover:bg-purple-600 first:rounded-t-md last:rounded-b-md"
+                      className="w-full text-left px-3 py-2 text-sm text-slate-900 hover:bg-purple-100 first:rounded-t-md last:rounded-b-md"
                     >
                       {option.label}
                     </button>
@@ -87,7 +87,7 @@ export function DataExtractor({
         {/* Include Results Checkbox */}
         <div className="space-y-2">
           <label className="flex gap-2 w-max cursor-pointer">
-            <span className="text-sm text-gray-500 dark:text-slate-300">
+            <span className="text-sm text-gray-500">
               Include simulation results
               {!hasTimesteps && (
                 <span className="block text-sm text-gray-400">
@@ -100,23 +100,23 @@ export function DataExtractor({
               checked={includeResults}
               onChange={(e) => onIncludeResultsChange(e.target.checked)}
               disabled={!hasTimesteps}
-              className="h-4 w-4 mt-0.5 bg-purple-500 focus:ring-purple-500 border-slate-300 dark:border-slate-600 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              className="h-4 w-4 mt-0.5 bg-purple-500 focus:ring-purple-500 border-slate-300 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             />
           </label>
         </div>
 
         {/* Conditional Results Options */}
         {includeResults && (
-          <div className="space-y-4 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
+          <div className="space-y-4 pl-4 border-l-2 border-slate-200">
             {/* Time Selection */}
             <div className="flex gap-2 items-center">
-              <label className="text-sm text-nowrap text-gray-500 dark:text-slate-300">
+              <label className="text-sm text-nowrap text-gray-500">
                 Select timestep
               </label>
               <select
                 value={selectedTime}
                 onChange={(e) => onSelectedTimeChange(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {timestepOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -129,18 +129,18 @@ export function DataExtractor({
             {/* Export All Timesteps Checkbox */}
             <div className="space-y-2">
               <label className="w-max flex items-center space-x-2 cursor-pointer">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-sm font-medium text-slate-700">
                   Export all timesteps as CSV
                 </span>
                 <input
                   type="checkbox"
                   checked={exportAllTimesteps}
                   onChange={(e) => onExportAllTimestepsChange(e.target.checked)}
-                  className="h-4 w-4 bg-purple-500 focus:ring-purple-500 border-slate-300 dark:border-slate-600 rounded cursor-pointer"
+                  className="h-4 w-4 bg-purple-500 focus:ring-purple-500 border-slate-300 rounded cursor-pointer"
                 />
               </label>
               {exportAllTimesteps && (
-                <p className="text-sm text-gray-500 dark:text-slate-400">
+                <p className="text-sm text-gray-500">
                   Results will be bundled in a ZIP file with separate CSV files
                   for nodes and links
                 </p>
@@ -157,7 +157,7 @@ export function DataExtractor({
           disabled={!canDownload}
           className={`w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium ${
             !canDownload
-              ? "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-500 cursor-not-allowed"
+              ? "bg-gray-100 text-gray-500 cursor-not-allowed"
               : "bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           }`}
         >
