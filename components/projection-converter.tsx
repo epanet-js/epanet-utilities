@@ -41,6 +41,16 @@ export function ProjectionConverter({
           projections={projections}
           loading={loadingProjections}
         />
+        <div className="flex justify-center">
+          <div className="p-2 bg-gray-100 dark:bg-slate-700 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              className="lucide lucide-arrow-down h-4 w-4 text-gray-500 dark:text-slate-400">
+              <path d="M12 5v14"></path>
+              <path d="m19 12-7 7-7-7"></path>
+            </svg>
+          </div>
+        </div>
         <ProjectionInput
           value={targetProjection}
           onValueChange={onTargetChange}
