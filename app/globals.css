@@ -81,3 +81,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.itr-projection-settings label[cmdk-label] {
+  display: none;
+}

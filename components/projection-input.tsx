@@ -69,7 +69,7 @@ export function ProjectionInput({
           <TabsTrigger value="manual">Manual</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="search" className="mt-4">
+        <TabsContent value="search" className="mt-4 itr-projection-settings">
           <ProjectionInputSearch
             value={value}
             onValueChange={onValueChange}
