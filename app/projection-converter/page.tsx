@@ -184,7 +184,7 @@ export default function Home() {
               EPANET Projection Converter
             </h1>
           </div>
-          <div className="p-4 space-y-4 flex flex-col md:h-[calc(100dvh_-_114px)]">
+          <div className="p-4 pb-0 space-y-4 flex flex-col md:h-[calc(100dvh_-_114px)]">
             <p className="text-sm text-gray-600">
               Convert your EPANET network files between different coordinate systems
             </p>
