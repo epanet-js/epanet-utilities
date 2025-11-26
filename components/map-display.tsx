@@ -219,7 +219,10 @@ export function MapDisplay({ geoJSON, projection }: MapDisplayProps) {
             </div>
           </div>
         ) : (
-          <div ref={mapContainer} className="absolute inset-0 h-[calc(100dvh_-_57px)] w-full" />
+          <div
+            ref={mapContainer}
+            className="absolute inset-0 h-[calc(100dvh_-_57px)] w-full"
+          />
         )}
       </div>
     </div>
