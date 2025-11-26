@@ -174,9 +174,11 @@ export default function Home() {
   return (
     <>
       <Toaster />
-      <div className="h-dvh grid
+      <div
+        className="h-dvh grid
       grid-rows-[auto_1fr_1fr] md:grid-rows-[auto_1fr]
-      grid-cols-1 md:grid-cols-2 lg:grid-cols-[400px_1fr]">
+      grid-cols-1 md:grid-cols-2 lg:grid-cols-[400px_1fr]"
+      >
         <AppHeader />
         <aside className="border-b-4 md:border-b-0 border-r border-gray-300 overflow-y-auto">
           <div className="p-4 border-b border-gray-300">
@@ -186,19 +188,22 @@ export default function Home() {
           </div>
           <div className="p-4 pb-0 space-y-4 flex flex-col md:h-[calc(100dvh_-_114px)]">
             <p className="text-sm text-gray-600">
-              Convert your EPANET network files between different coordinate systems
+              Convert your EPANET network files between different coordinate
+              systems
             </p>
             <FileUploader onFileLoaded={handleFileLoaded} />
-            <ProjectionConverter
-              sourceProjection={sourceProjection}
-              targetProjection={targetProjection}
-              onSourceChange={handleSourceProjectionChange}
-              onTargetChange={handleTargetProjectionChange}
-              onDownloadConverted={handleDownloadConverted}
-              canConvert={!!networkData}
-              projections={projections}
-              loadingProjections={loadingProjections}
-            />
+            {networkData && (
+              <ProjectionConverter
+                sourceProjection={sourceProjection}
+                targetProjection={targetProjection}
+                onSourceChange={handleSourceProjectionChange}
+                onTargetChange={handleTargetProjectionChange}
+                onDownloadConverted={handleDownloadConverted}
+                canConvert={!!networkData}
+                projections={projections}
+                loadingProjections={loadingProjections}
+              />
+            )}
           </div>
         </aside>
         <MapDisplay geoJSON={mapData} />

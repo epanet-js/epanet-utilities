@@ -59,9 +59,7 @@ export function FileUploader({ onFileLoaded }: FileUploaderProps) {
 
   return (
     <div className="space-y-2">
-      <h2 className="py-2 text-md font-semibold">
-        Upload EPANET File
-      </h2>
+      <h2 className="py-2 text-md font-semibold">Load an EPANET File</h2>
 
       {!file ? (
         <div
@@ -75,11 +73,15 @@ export function FileUploader({ onFileLoaded }: FileUploaderProps) {
           onDrop={handleDrop}
         >
           <div className="flex flex-col items-center justify-center space-y-3">
-            <div className={
-              `p-3 rounded-full
-              ${isDragging ? "bg-purple-100" : "bg-gray-100"}`
-            }>
-              <Upload className={`h-6 w-6 ${isDragging ? "text-purple-500" : "text-gray-500"}`} />
+            <div
+              className={`p-3 rounded-full
+              ${isDragging ? "bg-purple-100" : "bg-gray-100"}`}
+            >
+              <Upload
+                className={`h-6 w-6 ${
+                  isDragging ? "text-purple-500" : "text-gray-500"
+                }`}
+              />
             </div>
             <div>
               <p className="text-sm font-medium text-gray-700">
@@ -108,9 +110,7 @@ export function FileUploader({ onFileLoaded }: FileUploaderProps) {
         <div className="flex items-start p-3 border border-blue-300 bg-blue-50 rounded-md">
           <FileText className="h-4 w-4 text-blue-600 mr-2" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">
-              {file.name}
-            </p>
+            <p className="text-sm font-medium truncate">{file.name}</p>
             <p className="text-xs text-gray-500">
               {(file.size / 1024).toFixed(2)} KB
             </p>
