@@ -157,7 +157,7 @@ export default function Home() {
             <h2 className="text-3xl font-bold tracking-tight mb-4 text-center">
               Model water networks instantly
             </h2>
-            <p className="text-xl text-slate-300 max-w-2xl mx-auto">No setup or downloads &mdash; just instaant access right in your browser.</p>
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">No setup or downloads &mdash; just instant access right in your browser.</p>
             <div className="shadow-color">
 
             <picture className="block my-8">
