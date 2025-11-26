@@ -3,6 +3,12 @@
 import { ArrowDown, Download } from "lucide-react";
 import { ProjectionInput } from "./projection-input";
 import type { Projection } from "@/lib/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ProjectionConverterProps {
   sourceProjection: Projection | null;
@@ -25,6 +31,22 @@ export function ProjectionConverter({
   projections,
   loadingProjections,
 }: ProjectionConverterProps) {
+  const getDisabledReason = (): string | null => {
+    if (!canConvert) {
+      return "Please upload an EPANET file first";
+    }
+    if (!sourceProjection) {
+      return "Please select a source projection";
+    }
+    if (!targetProjection) {
+      return "Please select a target projection";
+    }
+    return null;
+  };
+
+  const isDisabled = !canConvert || !sourceProjection || !targetProjection;
+  const disabledReason = getDisabledReason();
+
   return (
     <div className="flex flex-col flex-grow">
       <h2 className="py-2 text-md font-semibold">Projection Settings</h2>
@@ -70,18 +92,29 @@ export function ProjectionConverter({
       </div>
 
       <div className="py-4 mt-auto">
-        <button
-          onClick={onDownloadConverted}
-          disabled={!canConvert || !sourceProjection || !targetProjection}
-          className={`w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium ${
-            !canConvert || !sourceProjection || !targetProjection
-              ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-          }`}
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Download Converted Model
-        </button>
+        <TooltipProvider delayDuration={100}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={onDownloadConverted}
+                disabled={isDisabled}
+                className={`w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium ${
+                  isDisabled
+                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                }`}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download Converted Model
+              </button>
+            </TooltipTrigger>
+            {isDisabled && disabledReason && (
+              <TooltipContent>
+                <p>{disabledReason}</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );
