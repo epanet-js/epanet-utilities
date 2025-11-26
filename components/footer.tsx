@@ -119,19 +119,19 @@ export function Footer() {
               <h3 className="text-lg font-semibold text-white">Product</h3>
               <nav className="flex flex-col space-y-3">
                 <a
-                  href="#features"
+                  href="https://epanetjs.com/#features"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Features
                 </a>
                 <a
-                  href="#pricing"
+                  href="https://epanetjs.com/#pricing"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   Pricing
                 </a>
                 <a
-                  href="#faq"
+                  href="https://epanetjs.com/#faq"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   FAQ
@@ -176,7 +176,7 @@ export function Footer() {
               <h3 className="text-lg font-semibold text-white">Company</h3>
               <nav className="flex flex-col space-y-3">
                 <a
-                  href="#why-we-built-epanet-js"
+                  href="https://epanetjs.com/#why-we-built-epanet-js"
                   className="text-gray-300 hover:text-white transition-colors"
                 >
                   About
