@@ -26,15 +26,10 @@ export default function RootLayout({
         className={`${inter.className} in-h-screen bg-white text-gray-900 h-dvh`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {children}
+          {children}
         </ThemeProvider>
       </body>
       <Script src="https://ext.masteringwater.com/latest.js" />
-      <Script
-        async
-        data-uid="89c2df9a6e"
-        src="https://mastering-water-models.kit.com/89c2df9a6e/index.js"
-      />
     </html>
   );
 }
