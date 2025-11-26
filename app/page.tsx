@@ -158,16 +158,8 @@ export default function Home() {
               </p>
               <div className="shadow-color">
                 <picture className="block my-8">
-                  <source
-                    srcSet="screenshot-light.webp"
-                    media="(prefers-color-scheme: light)"
-                  />
-                  <source
-                    srcSet="screenshot-dark.webp"
-                    media="(prefers-color-scheme: dark)"
-                  />
                   <img
-                    src="screenshot-light.webp"
+                    src="screenshot.webp"
                     alt="Screenshot of EPANET JS app"
                     className="mx-auto lg:max-w-3xl xl:max-w-5xl"
                   />
