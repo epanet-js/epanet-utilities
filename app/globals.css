@@ -33,6 +33,13 @@
     --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.5rem;
+
+    --color-accent-1: #d946ef;
+    --color-accent-2: #6366f1;
+
+    --epanetjs-primary: #a855f7;
+
+    accent-color: var(--epanetjs-primary);
   }
 
   .dark {
@@ -75,3 +82,6 @@
   }
 }
 
+.itr-projection-settings label[cmdk-label] {
+  display: none;
+}

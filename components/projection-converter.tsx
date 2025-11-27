@@ -3,6 +3,12 @@
 import { ArrowDown, Download } from "lucide-react";
 import { ProjectionInput } from "./projection-input";
 import type { Projection } from "@/lib/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ProjectionConverterProps {
   sourceProjection: Projection | null;
@@ -25,11 +31,25 @@ export function ProjectionConverter({
   projections,
   loadingProjections,
 }: ProjectionConverterProps) {
+  const getDisabledReason = (): string | null => {
+    if (!canConvert) {
+      return "Please upload an EPANET file first";
+    }
+    if (!sourceProjection) {
+      return "Please select a source projection";
+    }
+    if (!targetProjection) {
+      return "Please select a target projection";
+    }
+    return null;
+  };
+
+  const isDisabled = !canConvert || !sourceProjection || !targetProjection;
+  const disabledReason = getDisabledReason();
+
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-        Projection Settings
-      </h2>
+    <div className="flex flex-col flex-grow">
+      <h2 className="py-2 text-md font-semibold">Projection Settings</h2>
 
       <div className="space-y-6">
         <ProjectionInput
@@ -41,13 +61,25 @@ export function ProjectionConverter({
           projections={projections}
           loading={loadingProjections}
         />
-
         <div className="flex justify-center">
-          <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-full">
-            <ArrowDown className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+          <div className="p-2 bg-gray-100 rounded-full">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-arrow-down h-4 w-4 text-gray-500"
+            >
+              <path d="M12 5v14"></path>
+              <path d="m19 12-7 7-7-7"></path>
+            </svg>
           </div>
         </div>
-
         <ProjectionInput
           value={targetProjection}
           onValueChange={onTargetChange}
@@ -59,19 +91,30 @@ export function ProjectionConverter({
         />
       </div>
 
-      <div className="pt-4">
-        <button
-          onClick={onDownloadConverted}
-          disabled={!canConvert || !sourceProjection || !targetProjection}
-          className={`w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white ${
-            !canConvert || !sourceProjection || !targetProjection
-              ? "bg-slate-400 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-          }`}
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Download Converted Model
-        </button>
+      <div className="py-4 mt-auto">
+        <TooltipProvider delayDuration={100}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={onDownloadConverted}
+                disabled={isDisabled}
+                className={`w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium ${
+                  isDisabled
+                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                }`}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download Converted Model
+              </button>
+            </TooltipTrigger>
+            {isDisabled && disabledReason && (
+              <TooltipContent>
+                <p>{disabledReason}</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );

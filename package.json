@@ -12,6 +12,7 @@
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-tabs": "^1.1.2",
     "@radix-ui/react-toast": "^1.2.4",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "@types/file-saver": "^2.0.7",
     "@types/proj4": "^2.5.6",
     "class-variance-authority": "^0.7.1",

@@ -23,19 +23,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-900 min-h-screen`}
+        className={`${inter.className} in-h-screen bg-white text-gray-900 h-dvh`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AppHeader />
-          <div className="container mx-auto px-4 py-16">{children}</div>
+          {children}
         </ThemeProvider>
       </body>
       <Script src="https://ext.masteringwater.com/latest.js" />
-      <Script
-        async
-        data-uid="89c2df9a6e"
-        src="https://mastering-water-models.kit.com/89c2df9a6e/index.js"
-      />
     </html>
   );
 }
