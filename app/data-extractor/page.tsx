@@ -412,9 +412,11 @@ export default function DataExtractorPage() {
             : simulationProgress.message
         }
       />
-      <div className="h-dvh grid
+      <div
+        className="h-dvh grid
       grid-rows-[auto_1fr_1fr] md:grid-rows-[auto_1fr]
-      grid-cols-1 md:grid-cols-2 lg:grid-cols-[400px_1fr]">
+      grid-cols-1 md:grid-cols-2 lg:grid-cols-[400px_1fr]"
+      >
         <AppHeader />
         <aside className="border-b-4 md:border-b-0 border-r border-gray-300 overflow-y-auto">
           <div className="p-4 border-b border-gray-300">
@@ -428,19 +430,21 @@ export default function DataExtractorPage() {
               simulation results
             </p>
             <FileUploader onFileLoaded={handleFileLoaded} />
-            <DataExtractor
-              exportFormat={exportFormat}
-              onExportFormatChange={setExportFormat}
-              includeResults={includeResults}
-              onIncludeResultsChange={setIncludeResults}
-              selectedTime={selectedTime}
-              onSelectedTimeChange={setSelectedTime}
-              exportAllTimesteps={exportAllTimesteps}
-              onExportAllTimestepsChange={setExportAllTimesteps}
-              onDownload={handleDownload}
-              canDownload={!!networkData}
-              timestepOptions={timestepOptions}
-            />
+            {networkData && (
+              <DataExtractor
+                exportFormat={exportFormat}
+                onExportFormatChange={setExportFormat}
+                includeResults={includeResults}
+                onIncludeResultsChange={setIncludeResults}
+                selectedTime={selectedTime}
+                onSelectedTimeChange={setSelectedTime}
+                exportAllTimesteps={exportAllTimesteps}
+                onExportAllTimestepsChange={setExportAllTimesteps}
+                onDownload={handleDownload}
+                canDownload={!!networkData}
+                timestepOptions={timestepOptions}
+              />
+            )}
           </div>
         </aside>
         <MapDisplay geoJSON={mapData} />
