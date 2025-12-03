@@ -40,16 +40,16 @@ const utilities: Utility[] = [
     icon: <Database className="h-6 w-6" />,
     color: "from-orange-500 to-amber-500",
   },
-  //{
-  //  id: "fire-flow",
-  //  title: "Fire flow",
-  //  description:
-  //    "Fireflow is the amount of water available in a water distribution system for firefighting.",
-  //  link: "/fire-flwo",
-  //  type: "internal",
-  //  icon: <Flame className="h-6 w-6" />,
-  //  color: "from-orange-500 to-amber-500",
-  //},
+  {
+    id: "fire-flow",
+    title: "Fire flow analysis",
+    description:
+      "Calculate the fire flow available in all nodes of a water distribution system.",
+    link: "/fire-flow",
+    type: "internal",
+    icon: <Flame className="h-6 w-6" />,
+    color: "from-orange-500 to-amber-500",
+  },
   //
   //{
   //  id: "model-builder",
