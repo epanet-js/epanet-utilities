@@ -28,12 +28,25 @@ const nextConfig = {
         destination:
           "https://model-build-web-app.vercel.app/model-builder/:path*",
       },
+      {
+        source: "/fire-flow",
+        destination: "https://spike-fireflow-poc.vercel.app/fire-flow",
+      },
+      {
+        source: "/fire-flow/:path*",
+        destination: "https://spike-fireflow-poc.vercel.app/fire-flow/:path*",
+      },
     ];
   },
   redirects: [
     {
       source: "/model-builder/",
       destination: "/model-builder",
+      permanent: false,
+    },
+    {
+      source: "/fire-flow/",
+      destination: "/fire-flow",
       permanent: false,
     },
   ],
