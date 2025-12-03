@@ -30,7 +30,7 @@ const nextConfig = {
       },
       {
         source: "/fire-flow",
-        destination: "https://spike-fireflow-poc.vercel.app/fire-flow",
+        destination: "https://spike-fireflow-poc.vercel.app/",
       },
       {
         source: "/fire-flow/:path*",
