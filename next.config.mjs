@@ -36,6 +36,15 @@ const nextConfig = {
         source: "/fire-flow/:path*",
         destination: "https://spike-fireflow-poc.vercel.app/fire-flow/:path*",
       },
+      {
+        source: "/acoustic-deployment",
+        destination: "https://acoustic-logger-poc.vercel.app/",
+      },
+      {
+        source: "/acoustic-deployment/:path*",
+        destination:
+          "https://acoustic-logger-poc.vercel.app/acoustic-deployment/:path*",
+      },
     ];
   },
   redirects: [
