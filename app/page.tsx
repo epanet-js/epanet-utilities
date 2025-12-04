@@ -62,7 +62,7 @@ const utilities: Utility[] = [
     title: "Acoustic Deployment",
     description:
       "Test the coverage, and optimize the deployment of acoustic logger in a water distribution system.",
-    link: "/fire-flow",
+    link: "/acoustic-deployment",
     type: "internal",
     icon: <AudioLines className="h-6 w-6" />,
     color: "from-orange-500 to-amber-500",
