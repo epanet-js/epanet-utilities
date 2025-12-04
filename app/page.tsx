@@ -1,6 +1,13 @@
 import type React from "react";
 import Link from "next/link";
-import { ExternalLink, ArrowRight, Globe, Flame, Database } from "lucide-react";
+import {
+  ExternalLink,
+  ArrowRight,
+  Globe,
+  Flame,
+  Database,
+  AudioLines,
+} from "lucide-react";
 import { Layers } from "lucide-react";
 import { AppHeader } from "@/components/app-header";
 import { Footer } from "@/components/footer";
@@ -48,6 +55,16 @@ const utilities: Utility[] = [
     link: "/fire-flow",
     type: "internal",
     icon: <Flame className="h-6 w-6" />,
+    color: "from-orange-500 to-amber-500",
+  },
+  {
+    id: "acoustic-deployment",
+    title: "Acoustic Deployment",
+    description:
+      "Test the coverage, and optimize the deployment of acoustic logger in a water distribution system.",
+    link: "/fire-flow",
+    type: "internal",
+    icon: <AudioLines className="h-6 w-6" />,
     color: "from-orange-500 to-amber-500",
   },
   //
