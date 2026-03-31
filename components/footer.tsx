@@ -1,5 +1,5 @@
 "use client";
-import { LogoIconAndWordmarkIcon } from "@/components/app-header";
+import { IteratingLogoIcon, LogoIconAndWordmarkIcon } from "@/components/app-header";
 import { useState } from "react";
 
 export function Footer() {
@@ -210,8 +210,12 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t border-slate-700 py-6">
-          <p className="text-sm text-gray-400 text-right">
-            © 2025 Iterating Inc. All rights reserved.
+          <p className="flex items-center justify-end gap-1 text-sm text-gray-400 text-right">
+            &copy; 2025
+            <a href="//iterating.ca" className="hover:text-white ml-1" target="_blank">
+              <IteratingLogoIcon size={72} />
+            </a>
+            All rights reserved.
           </p>
         </div>
       </div>
