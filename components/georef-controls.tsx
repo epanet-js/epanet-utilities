@@ -10,7 +10,7 @@ import {
   CommandList,
   CommandLoading,
 } from "cmdk";
-import { Download, MapPin, RotateCcw, Target } from "lucide-react";
+import { Download, MapPin, RotateCcw, Target, X } from "lucide-react";
 import { geocode, type GeocodeResult } from "@/lib/geocoding";
 import {
   DEFAULT_TRANSFORM,
@@ -25,6 +25,7 @@ interface GeorefControlsProps {
   units: "US" | "SI" | null;
   onGeocodeSelect: (result: GeocodeResult) => void;
   onPlaceAtMapCenter: () => void;
+  onClearPlacement: () => void;
   onReset: () => void;
   onDownload: () => void;
 }
@@ -36,6 +37,7 @@ export function GeorefControls({
   units,
   onGeocodeSelect,
   onPlaceAtMapCenter,
+  onClearPlacement,
   onReset,
   onDownload,
 }: GeorefControlsProps) {
@@ -47,80 +49,100 @@ export function GeorefControls({
 
   return (
     <div className="flex flex-col flex-grow space-y-5">
-      <div>
-        <label className="text-sm font-medium text-gray-700 block mb-1">
-          Find a location
-        </label>
-        <LocationSearch onSelect={onGeocodeSelect} />
-        <p className="text-xs text-gray-500 mt-1">
-          Search by city, address, or postcode. The network will drop at the
-          selected location.
-        </p>
-      </div>
-
-      <div>
-        <button
-          onClick={onPlaceAtMapCenter}
-          className="w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
-        >
-          <Target className="h-4 w-4 mr-2" />
-          Place network at map center
-        </button>
-        <p className="text-xs text-gray-500 mt-1">
-          Pan and zoom the map, then click to drop (or re-drop) the network at
-          the current view.
-        </p>
-      </div>
-
-      <div className="rounded-md border border-gray-200 bg-gray-50 p-3 text-xs space-y-1">
-        {units && (
-          <div className="flex justify-between">
-            <span className="text-gray-500">Units</span>
-            <span className="font-mono text-gray-800">
-              {units === "US" ? "US customary (feet)" : "SI (meters)"}
-            </span>
+      {!anchor ? (
+        <>
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">
+              Find a location
+            </label>
+            <LocationSearch onSelect={onGeocodeSelect} />
+            <p className="text-xs text-gray-500 mt-1">
+              Search by city, address, or postcode. The network will drop at
+              the selected location.
+            </p>
           </div>
-        )}
-        <div className="flex justify-between">
-          <span className="text-gray-500">Anchor</span>
-          <span className="font-mono text-gray-800">
-            {anchor
-              ? `${anchor.lat.toFixed(5)}, ${anchor.lng.toFixed(5)}`
-              : "not set"}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-500">Scale</span>
-          <span className="font-mono text-gray-800">
-            {params.scale.toFixed(3)}×
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-500">Rotation</span>
-          <span className="font-mono text-gray-800">
-            {params.rotationDeg.toFixed(1)}°
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-500">Offset X</span>
-          <span className="font-mono text-gray-800">
-            {params.offsetX.toFixed(1)} m
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-500">Offset Y</span>
-          <span className="font-mono text-gray-800">
-            {params.offsetY.toFixed(1)} m
-          </span>
-        </div>
-      </div>
 
-      <div className="text-xs text-gray-500 space-y-1">
-        <p className="font-medium text-gray-700">Lock mode shortcuts</p>
-        <p>Drag body to move · corners to rotate · edges to scale</p>
-        <p>Arrows: nudge (Shift × 10) · + / − : scale · [ / ] : rotate</p>
-        <p>R: reset · Esc: unlock</p>
-      </div>
+          <div>
+            <button
+              onClick={onPlaceAtMapCenter}
+              className="w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              <Target className="h-4 w-4 mr-2" />
+              Place network at map center
+            </button>
+            <p className="text-xs text-gray-500 mt-1">
+              Pan and zoom the map, then click to drop the network at the
+              current view.
+            </p>
+          </div>
+        </>
+      ) : (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-emerald-900">
+              <MapPin className="h-4 w-4" />
+              Network placed
+            </div>
+            <button
+              onClick={onClearPlacement}
+              className="flex items-center gap-1 text-xs text-emerald-800 hover:text-emerald-900 hover:underline"
+              title="Remove the network and pick a new location"
+            >
+              <X className="h-3.5 w-3.5" />
+              Replace
+            </button>
+          </div>
+          <div className="text-xs space-y-1">
+            {units && (
+              <div className="flex justify-between">
+                <span className="text-emerald-800/70">Units</span>
+                <span className="font-mono text-emerald-900">
+                  {units === "US" ? "US customary (feet)" : "SI (meters)"}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="text-emerald-800/70">Anchor</span>
+              <span className="font-mono text-emerald-900">
+                {anchor.lat.toFixed(5)}, {anchor.lng.toFixed(5)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-emerald-800/70">Scale</span>
+              <span className="font-mono text-emerald-900">
+                {params.scale.toFixed(3)}×
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-emerald-800/70">Rotation</span>
+              <span className="font-mono text-emerald-900">
+                {params.rotationDeg.toFixed(1)}°
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-emerald-800/70">Offset X</span>
+              <span className="font-mono text-emerald-900">
+                {params.offsetX.toFixed(1)} m
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-emerald-800/70">Offset Y</span>
+              <span className="font-mono text-emerald-900">
+                {params.offsetY.toFixed(1)} m
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {anchor && (
+        <div className="text-xs text-gray-500 space-y-1">
+          <p className="font-medium text-gray-700">Lock mode shortcuts</p>
+          <p>Drag body to move · corners to rotate · edges to scale</p>
+          <p>Arrows: nudge (Shift × 10) · + / − : scale · [ / ] : rotate</p>
+          <p>R: reset · Esc: unlock</p>
+        </div>
+      )}
 
       <div className="pt-2 mt-auto space-y-2">
         <button

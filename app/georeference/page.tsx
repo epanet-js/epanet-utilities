@@ -188,6 +188,11 @@ export default function GeoreferencePage() {
     placeAt(mapRef.current.getCenter(), { fitToNetwork: true });
   }, [loaded, placeAt]);
 
+  const handleClearPlacement = useCallback(() => {
+    setPlaced(null);
+    setParams(DEFAULT_TRANSFORM);
+  }, []);
+
   const transformedGeoJson: FeatureCollection | null = useMemo(() => {
     if (!placed || !loaded) return null;
     const transformed = applyTransform(placed.placedNd, params, {
@@ -267,9 +272,8 @@ export default function GeoreferencePage() {
           </div>
           <div className="p-4 space-y-4 flex flex-col md:h-[calc(100dvh_-_114px)]">
             <p className="text-sm text-gray-600">
-              Drop an INP onto a real-world map and fit it visually. Find a
-              location, lock the map, then drag / scale / rotate to match the
-              ground.
+              Drop an INP onto a map and fit it visually. Find a location, lock
+              the map, then drag / scale / rotate to match the ground.
             </p>
             <FileUploader onFileLoaded={handleFileLoaded} />
             {loaded && (
@@ -280,6 +284,7 @@ export default function GeoreferencePage() {
                 units={loaded.units}
                 onGeocodeSelect={handleGeocodeSelect}
                 onPlaceAtMapCenter={handlePlaceAtMapCenter}
+                onClearPlacement={handleClearPlacement}
                 onReset={handleReset}
                 onDownload={handleDownload}
               />
