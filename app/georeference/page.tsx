@@ -26,7 +26,6 @@ import {
   bboxCenter,
   computeBbox,
   DEFAULT_TRANSFORM,
-  METERS_PER_DEGREE,
   type Bbox,
   type TransformParams,
 } from "@/lib/network-transform";
@@ -46,7 +45,6 @@ interface LoadedFile {
   isLatLng: boolean;
   units: EpanetUnitSystem;
   metersPerUnit: number;
-  bboxSizeMeters: { widthMeters: number; heightMeters: number };
 }
 
 interface PlacedNetwork {
@@ -54,27 +52,6 @@ interface PlacedNetwork {
   anchor: LatLng;
   /** Bbox of `placedNd` in lat/lng (identity transform). */
   placedBbox: Bbox;
-}
-
-function deriveBboxSizeMeters(
-  bbox: Bbox,
-  isLatLng: boolean,
-  centerLat: number,
-  metersPerUnit: number,
-): { widthMeters: number; heightMeters: number } {
-  const widthNative = bbox.maxX - bbox.minX;
-  const heightNative = bbox.maxY - bbox.minY;
-  if (!isLatLng) {
-    return {
-      widthMeters: widthNative * metersPerUnit,
-      heightMeters: heightNative * metersPerUnit,
-    };
-  }
-  const cosLat = Math.cos((centerLat * Math.PI) / 180);
-  return {
-    widthMeters: widthNative * METERS_PER_DEGREE * Math.abs(cosLat),
-    heightMeters: heightNative * METERS_PER_DEGREE,
-  };
 }
 
 function buildLoaded(
@@ -86,12 +63,6 @@ function buildLoaded(
   const isLatLng = isLikelyLatLng(epanetGeoJson.geojson);
   const units = detectEpanetUnits(networkData.inp);
   const metersPerUnit = METERS_PER_UNIT[units];
-  const bboxSizeMeters = deriveBboxSizeMeters(
-    bbox,
-    isLatLng,
-    nativeCenter[1],
-    metersPerUnit,
-  );
   return {
     networkData,
     epanetGeoJson,
@@ -100,7 +71,6 @@ function buildLoaded(
     isLatLng,
     units,
     metersPerUnit,
-    bboxSizeMeters,
   };
 }
 
@@ -319,7 +289,6 @@ export default function GeoreferencePage() {
           anchor={placed?.anchor ?? null}
           params={params}
           onParamsChange={setParams}
-          bboxSizeMeters={loaded?.bboxSizeMeters ?? { widthMeters: 0, heightMeters: 0 }}
         />
       </div>
     </>

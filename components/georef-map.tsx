@@ -7,10 +7,25 @@ import {
   useMemo,
   useRef,
   useState,
+  type ReactNode,
 } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Lock, Map as MapIcon, Satellite, Tag, Unlock } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  Lock,
+  Map as MapIcon,
+  Minus,
+  Plus,
+  RotateCcw,
+  RotateCw,
+  Satellite,
+  Tag,
+  Unlock,
+} from "lucide-react";
 import { FeatureCollection } from "geojson";
 import { useMapResizeObserver } from "@/hooks/use-mapresize-observer";
 import {
@@ -56,9 +71,9 @@ interface GeorefMapProps {
   anchor: LatLng | null;
   params: TransformParams;
   onParamsChange: (p: TransformParams) => void;
-  /** Network bbox size in meters; used for keyboard nudge step sizes. */
-  bboxSizeMeters: { widthMeters: number; heightMeters: number };
 }
+
+const TARGET_NUDGE_PX = 12;
 
 type DragKind = "body" | "corner" | "edge";
 
@@ -79,7 +94,6 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
       anchor,
       params,
       onParamsChange,
-      bboxSizeMeters,
     },
     ref,
   ) {
@@ -98,7 +112,7 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
     const paramsRef = useRef(params);
     const anchorRef = useRef(anchor);
     const onParamsChangeRef = useRef(onParamsChange);
-    const bboxSizeRef = useRef(bboxSizeMeters);
+    const bboxCornersRef = useRef(bboxCorners);
     useEffect(() => {
       paramsRef.current = params;
     }, [params]);
@@ -109,8 +123,8 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
       onParamsChangeRef.current = onParamsChange;
     }, [onParamsChange]);
     useEffect(() => {
-      bboxSizeRef.current = bboxSizeMeters;
-    }, [bboxSizeMeters]);
+      bboxCornersRef.current = bboxCorners;
+    }, [bboxCorners]);
 
     // Init Mapbox once.
     useEffect(() => {
@@ -353,6 +367,74 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
       }
     };
 
+    // --- Adaptive nudge actions -------------------------------------------
+    // Step sizes are driven by the current map view so they shrink as the
+    // user zooms in. Translate = N pixels of real-world meters at the anchor
+    // latitude; scale / rotate = whatever change moves the farthest bbox
+    // corner by N pixels on screen.
+    const computeSteps = (shift: boolean) => {
+      const m = map.current;
+      const a = anchorRef.current;
+      if (!m || !a) return null;
+      const mul = shift ? 10 : 1;
+      const targetPx = TARGET_NUDGE_PX * mul;
+
+      const p0 = m.project([a.lng, a.lat]);
+      const p1 = m.unproject([p0.x + 1, p0.y]);
+      const cosLat = Math.cos((a.lat * Math.PI) / 180) || 1e-9;
+      const metersPerPx = Math.abs(
+        (p1.lng - a.lng) * METERS_PER_DEGREE * cosLat,
+      );
+
+      let radiusPx = 60;
+      const corners = bboxCornersRef.current;
+      if (corners && corners.length === 4) {
+        const pts = corners.map(([lng, lat]) => m.project([lng, lat]));
+        const cx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
+        const cy = pts.reduce((s, p) => s + p.y, 0) / pts.length;
+        radiusPx = Math.max(
+          ...pts.map((p) => Math.hypot(p.x - cx, p.y - cy)),
+        );
+      }
+      radiusPx = Math.max(radiusPx, 30);
+
+      return {
+        translateMeters: targetPx * metersPerPx,
+        scaleFactor: 1 + targetPx / radiusPx,
+        rotateDeg: ((targetPx / radiusPx) * 180) / Math.PI,
+      };
+    };
+
+    const nudgeTranslate = (dx: number, dy: number, shift: boolean) => {
+      const s = computeSteps(shift);
+      if (!s) return;
+      const p = paramsRef.current;
+      onParamsChangeRef.current({
+        ...p,
+        offsetX: p.offsetX + dx * s.translateMeters,
+        offsetY: p.offsetY + dy * s.translateMeters,
+      });
+    };
+
+    const nudgeScale = (dir: 1 | -1, shift: boolean) => {
+      const s = computeSteps(shift);
+      if (!s) return;
+      const p = paramsRef.current;
+      const factor = dir > 0 ? s.scaleFactor : 1 / s.scaleFactor;
+      const scale = Math.min(Math.max(p.scale * factor, 0.001), 1000);
+      onParamsChangeRef.current({ ...p, scale });
+    };
+
+    const nudgeRotate = (dir: 1 | -1, shift: boolean) => {
+      const s = computeSteps(shift);
+      if (!s) return;
+      const p = paramsRef.current;
+      let r = p.rotationDeg + dir * s.rotateDeg;
+      while (r > 180) r -= 360;
+      while (r < -180) r += 360;
+      onParamsChangeRef.current({ ...p, rotationDeg: r });
+    };
+
     // --- Keyboard shortcuts ------------------------------------------------
     useEffect(() => {
       if (!locked) return;
@@ -368,63 +450,52 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
           return;
         }
 
-        const shift = ev.shiftKey ? 10 : 1;
-        const stepX = Math.max(bboxSizeRef.current.widthMeters * 0.01, 0.5) * shift;
-        const stepY = Math.max(bboxSizeRef.current.heightMeters * 0.01, 0.5) * shift;
-        const p = paramsRef.current;
-        let next: TransformParams | null = null;
-
+        let handled = true;
         switch (ev.key) {
           case "ArrowLeft":
-            next = { ...p, offsetX: p.offsetX - stepX };
+            nudgeTranslate(-1, 0, ev.shiftKey);
             break;
           case "ArrowRight":
-            next = { ...p, offsetX: p.offsetX + stepX };
+            nudgeTranslate(1, 0, ev.shiftKey);
             break;
           case "ArrowUp":
-            next = { ...p, offsetY: p.offsetY + stepY };
+            nudgeTranslate(0, 1, ev.shiftKey);
             break;
           case "ArrowDown":
-            next = { ...p, offsetY: p.offsetY - stepY };
+            nudgeTranslate(0, -1, ev.shiftKey);
             break;
           case "+":
           case "=":
-            next = { ...p, scale: Math.min(p.scale * 1.05, 1000) };
+            nudgeScale(1, ev.shiftKey);
             break;
           case "-":
           case "_":
-            next = { ...p, scale: Math.max(p.scale / 1.05, 0.001) };
+            nudgeScale(-1, ev.shiftKey);
             break;
-          case "[": {
-            let r = p.rotationDeg - shift;
-            while (r < -180) r += 360;
-            next = { ...p, rotationDeg: r };
+          case "[":
+            nudgeRotate(-1, ev.shiftKey);
             break;
-          }
-          case "]": {
-            let r = p.rotationDeg + shift;
-            while (r > 180) r -= 360;
-            next = { ...p, rotationDeg: r };
+          case "]":
+            nudgeRotate(1, ev.shiftKey);
             break;
-          }
           case "r":
           case "R":
-            next = { ...DEFAULT_TRANSFORM };
+            onParamsChangeRef.current({ ...DEFAULT_TRANSFORM });
             break;
           case "Escape":
             setLocked(false);
-            ev.preventDefault();
-            return;
+            break;
+          default:
+            handled = false;
         }
-
-        if (next) {
-          ev.preventDefault();
-          onParamsChangeRef.current(next);
-        }
+        if (handled) ev.preventDefault();
       };
 
       window.addEventListener("keydown", onKey);
       return () => window.removeEventListener("keydown", onKey);
+      // nudge* closures capture refs (paramsRef etc.), so this effect can
+      // stay keyed only on `locked`.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [locked]);
 
     // Disable lock if no anchor yet.
@@ -592,10 +663,69 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
             </button>
           </div>
 
-          {locked && (
-            <div className="absolute bottom-3 left-3 z-10 px-3 py-2 rounded-md text-xs bg-black/70 text-white max-w-xs">
-              Drag the shape to move · corners to rotate · edges to scale. Press
-              Esc to unlock.
+          {/* Floating toolbar */}
+          {anchor && bboxCorners && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 px-2 py-1.5 rounded-full shadow-lg border border-gray-200 bg-white">
+              <ToolbarGroup label="Move">
+                <ToolbarButton
+                  title="Move left (Shift ×10)"
+                  onClick={(shift) => nudgeTranslate(-1, 0, shift)}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  title="Move down (Shift ×10)"
+                  onClick={(shift) => nudgeTranslate(0, -1, shift)}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  title="Move up (Shift ×10)"
+                  onClick={(shift) => nudgeTranslate(0, 1, shift)}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  title="Move right (Shift ×10)"
+                  onClick={(shift) => nudgeTranslate(1, 0, shift)}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </ToolbarButton>
+              </ToolbarGroup>
+
+              <div className="w-px h-6 bg-gray-200 mx-1" />
+
+              <ToolbarGroup label="Scale">
+                <ToolbarButton
+                  title="Scale down (Shift ×10)"
+                  onClick={(shift) => nudgeScale(-1, shift)}
+                >
+                  <Minus className="h-4 w-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  title="Scale up (Shift ×10)"
+                  onClick={(shift) => nudgeScale(1, shift)}
+                >
+                  <Plus className="h-4 w-4" />
+                </ToolbarButton>
+              </ToolbarGroup>
+
+              <div className="w-px h-6 bg-gray-200 mx-1" />
+
+              <ToolbarGroup label="Rotate">
+                <ToolbarButton
+                  title="Rotate counter-clockwise (Shift ×10)"
+                  onClick={(shift) => nudgeRotate(-1, shift)}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  title="Rotate clockwise (Shift ×10)"
+                  onClick={(shift) => nudgeRotate(1, shift)}
+                >
+                  <RotateCw className="h-4 w-4" />
+                </ToolbarButton>
+              </ToolbarGroup>
             </div>
           )}
         </div>
@@ -603,3 +733,42 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
     );
   },
 );
+
+function ToolbarGroup({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className="flex items-center gap-0.5"
+      role="group"
+      aria-label={label}
+    >
+      {children}
+    </div>
+  );
+}
+
+function ToolbarButton({
+  title,
+  onClick,
+  children,
+}: {
+  title: string;
+  onClick: (shift: boolean) => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={(e) => onClick(e.shiftKey)}
+      className="flex items-center justify-center w-9 h-9 rounded-full text-gray-700 hover:bg-gray-100 active:bg-gray-200"
+    >
+      {children}
+    </button>
+  );
+}
