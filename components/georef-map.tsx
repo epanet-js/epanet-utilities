@@ -416,23 +416,76 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
       });
     };
 
+    // Scale / rotate pivot from the current map viewport center so the point
+    // under the user's eye stays locked on-screen while the network spreads
+    // outward. `applyTransform` always pivots on the anchor, so we compensate
+    // by rebaking (offsetX, offsetY) via the affine-composition identity:
+    //   T' = U ∘ T   where  U is "scale/rotate around V"
+    // works out to: new offset (in degrees) = f * old_offset + (f-1)*(origin-V)
+    // for scale, and R(α) * old_offset + (R(α)-I)*(origin-V) for rotate.
     const nudgeScale = (dir: 1 | -1, shift: boolean) => {
       const s = computeSteps(shift);
-      if (!s) return;
+      const m = map.current;
+      const a = anchorRef.current;
+      if (!s || !m || !a) return;
       const p = paramsRef.current;
-      const factor = dir > 0 ? s.scaleFactor : 1 / s.scaleFactor;
-      const scale = Math.min(Math.max(p.scale * factor, 0.001), 1000);
-      onParamsChangeRef.current({ ...p, scale });
+      const rawFactor = dir > 0 ? s.scaleFactor : 1 / s.scaleFactor;
+      const newScale = Math.min(Math.max(p.scale * rawFactor, 0.001), 1000);
+      const f = newScale / p.scale;
+      if (f === 1) return;
+
+      const v = m.getCenter();
+      const cosLat = Math.cos((a.lat * Math.PI) / 180) || 1e-9;
+      const doLng = a.lng - v.lng;
+      const doLat = a.lat - v.lat;
+      const txDeg = p.offsetX / (METERS_PER_DEGREE * cosLat);
+      const tyDeg = p.offsetY / METERS_PER_DEGREE;
+      const txNewDeg = f * txDeg + (f - 1) * doLng;
+      const tyNewDeg = f * tyDeg + (f - 1) * doLat;
+
+      onParamsChangeRef.current({
+        ...p,
+        scale: newScale,
+        offsetX: txNewDeg * METERS_PER_DEGREE * cosLat,
+        offsetY: tyNewDeg * METERS_PER_DEGREE,
+      });
     };
 
     const nudgeRotate = (dir: 1 | -1, shift: boolean) => {
       const s = computeSteps(shift);
-      if (!s) return;
+      const m = map.current;
+      const a = anchorRef.current;
+      if (!s || !m || !a) return;
       const p = paramsRef.current;
-      let r = p.rotationDeg + dir * s.rotateDeg;
+      const deltaDeg = dir * s.rotateDeg;
+      if (deltaDeg === 0) return;
+
+      let r = p.rotationDeg + deltaDeg;
       while (r > 180) r -= 360;
       while (r < -180) r += 360;
-      onParamsChangeRef.current({ ...p, rotationDeg: r });
+
+      const v = m.getCenter();
+      const cosLat = Math.cos((a.lat * Math.PI) / 180) || 1e-9;
+      const alpha = (deltaDeg * Math.PI) / 180;
+      const ca = Math.cos(alpha);
+      const sa = Math.sin(alpha);
+      const doLng = a.lng - v.lng;
+      const doLat = a.lat - v.lat;
+      const txDeg = p.offsetX / (METERS_PER_DEGREE * cosLat);
+      const tyDeg = p.offsetY / METERS_PER_DEGREE;
+      const txRot = ca * txDeg - sa * tyDeg;
+      const tyRot = sa * txDeg + ca * tyDeg;
+      const dxRot = ca * doLng - sa * doLat;
+      const dyRot = sa * doLng + ca * doLat;
+      const txNewDeg = txRot + (dxRot - doLng);
+      const tyNewDeg = tyRot + (dyRot - doLat);
+
+      onParamsChangeRef.current({
+        ...p,
+        rotationDeg: r,
+        offsetX: txNewDeg * METERS_PER_DEGREE * cosLat,
+        offsetY: tyNewDeg * METERS_PER_DEGREE,
+      });
     };
 
     // --- Keyboard shortcuts ------------------------------------------------
