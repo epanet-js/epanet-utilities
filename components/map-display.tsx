@@ -116,12 +116,21 @@ export function MapDisplay({
     if (!map.current || !mapLoaded) return;
 
     const m = map.current;
+    const existing = m.getSource("original") as
+      | mapboxgl.GeoJSONSource
+      | undefined;
 
-    if (m.getLayer("original-points")) m.removeLayer("original-points");
-    if (m.getLayer("original-lines")) m.removeLayer("original-lines");
-    if (m.getSource("original")) m.removeSource("original");
+    if (!processedOriginalGeoJSON) {
+      if (m.getLayer("original-points")) m.removeLayer("original-points");
+      if (m.getLayer("original-lines")) m.removeLayer("original-lines");
+      if (existing) m.removeSource("original");
+      return;
+    }
 
-    if (!processedOriginalGeoJSON) return;
+    if (existing) {
+      existing.setData(processedOriginalGeoJSON);
+      return;
+    }
 
     m.addSource("original", {
       type: "geojson",
@@ -134,7 +143,7 @@ export function MapDisplay({
       source: "original",
       filter: ["==", ["get", "type"], "Link"],
       paint: {
-        "line-color": "#d1d5db",
+        "line-color": "#b7bcc5",
         "line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.5, 16, 4],
       },
     });
@@ -146,71 +155,7 @@ export function MapDisplay({
       filter: ["==", ["get", "type"], "Node"],
       paint: {
         "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 0.5, 16, 5],
-        "circle-color": "#d1d5db",
-        "circle-stroke-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          13,
-          0.5,
-          16,
-          1,
-        ],
-        "circle-stroke-color": "#f3f4f6",
-      },
-      minzoom: 13,
-    });
-  }, [processedOriginalGeoJSON, mapLoaded]);
-
-  // Manage the blue (transformed / primary) network layer.
-  useEffect(() => {
-    if (!map.current || !mapLoaded) return;
-
-    const m = map.current;
-    const hasOriginal = !!processedOriginalGeoJSON;
-
-    if (m.getLayer("network-points")) m.removeLayer("network-points");
-    if (m.getLayer("network-lines")) m.removeLayer("network-lines");
-    if (m.getSource("network")) m.removeSource("network");
-
-    if (!processedGeoJSON) {
-      if (!hasOriginal) {
-        setTimeout(() => {
-          if (map.current) {
-            map.current.setZoom(0);
-            map.current.setCenter([0, 0]);
-          }
-        }, 100);
-        // @ts-expect-error // Types are wrong, it does accept null to reset
-        m.setMaxBounds(null);
-      }
-      return;
-    }
-
-    m.addSource("network", {
-      type: "geojson",
-      data: processedGeoJSON,
-    });
-
-    m.addLayer({
-      id: "network-lines",
-      type: "line",
-      source: "network",
-      filter: ["==", ["get", "type"], "Link"],
-      paint: {
-        "line-color": "#3b82f6",
-        "line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.5, 16, 4],
-      },
-    });
-
-    m.addLayer({
-      id: "network-points",
-      type: "circle",
-      source: "network",
-      filter: ["==", ["get", "type"], "Node"],
-      paint: {
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 0.5, 16, 5],
-        "circle-color": "#3b82f6",
+        "circle-color": "#b7bcc5",
         "circle-stroke-width": [
           "interpolate",
           ["linear"],
@@ -224,11 +169,89 @@ export function MapDisplay({
       },
       minzoom: 13,
     });
+  }, [processedOriginalGeoJSON, mapLoaded]);
+
+  // Manage the blue (transformed / primary) network layer.
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    const m = map.current;
+    const hasOriginal = !!processedOriginalGeoJSON;
+    const existing = m.getSource("network") as
+      | mapboxgl.GeoJSONSource
+      | undefined;
+
+    if (!processedGeoJSON) {
+      if (m.getLayer("network-points")) m.removeLayer("network-points");
+      if (m.getLayer("network-lines")) m.removeLayer("network-lines");
+      if (existing) m.removeSource("network");
+      if (!hasOriginal) {
+        setTimeout(() => {
+          if (map.current) {
+            map.current.setZoom(0);
+            map.current.setCenter([0, 0]);
+          }
+        }, 100);
+        // @ts-expect-error // Types are wrong, it does accept null to reset
+        m.setMaxBounds(null);
+      }
+      return;
+    }
+
+    if (existing) {
+      existing.setData(processedGeoJSON);
+    } else {
+      m.addSource("network", {
+        type: "geojson",
+        data: processedGeoJSON,
+      });
+
+      m.addLayer({
+        id: "network-lines",
+        type: "line",
+        source: "network",
+        filter: ["==", ["get", "type"], "Link"],
+        paint: {
+          "line-color": "#3b82f6",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.5, 16, 4],
+        },
+      });
+
+      m.addLayer({
+        id: "network-points",
+        type: "circle",
+        source: "network",
+        filter: ["==", ["get", "type"], "Node"],
+        paint: {
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            12,
+            0.5,
+            16,
+            5,
+          ],
+          "circle-color": "#3b82f6",
+          "circle-stroke-width": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            13,
+            0.5,
+            16,
+            1,
+          ],
+          "circle-stroke-color": "#ffffff",
+        },
+        minzoom: 13,
+      });
+    }
 
     // Fit bounds. When an `originalGeoJSON` is supplied the original drives the
     // fit (see the effect below) so the camera doesn't jump on every transform
-    // tick. Without an original, fit to the primary layer as before.
-    if (hasOriginal) return;
+    // tick. Without an original, fit to the primary layer on first render.
+    if (hasOriginal || existing) return;
 
     const coordinates = collectCoords(processedGeoJSON);
     if (coordinates.length === 0) return;
