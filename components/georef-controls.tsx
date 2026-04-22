@@ -61,16 +61,15 @@ export function GeorefControls({
       <div>
         <button
           onClick={onPlaceAtMapCenter}
-          disabled={!canDownload}
-          className={`w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium border ${
-            !canDownload
-              ? "border-gray-200 text-gray-400 cursor-not-allowed"
-              : "border-gray-300 text-gray-700 hover:bg-gray-50"
-          }`}
+          className="w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           <Target className="h-4 w-4 mr-2" />
           Place network at map center
         </button>
+        <p className="text-xs text-gray-500 mt-1">
+          Pan and zoom the map, then click to drop (or re-drop) the network at
+          the current view.
+        </p>
       </div>
 
       <div className="rounded-md border border-gray-200 bg-gray-50 p-3 text-xs space-y-1">

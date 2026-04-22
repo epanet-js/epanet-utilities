@@ -147,7 +147,7 @@ export default function GeoreferencePage() {
   }, []);
 
   const placeAt = useCallback(
-    (anchor: LatLng) => {
+    (anchor: LatLng, options?: { fitToNetwork?: boolean }) => {
       if (!loaded) return;
       const placedNd = placeNetworkAtLatLng(
         loaded.networkData,
@@ -156,12 +156,16 @@ export default function GeoreferencePage() {
         loaded.nativeCenter,
         loaded.metersPerUnit,
       );
-      setPlaced({
-        placedNd,
-        anchor,
-        placedBbox: computeBbox(placedNd),
-      });
+      const placedBbox = computeBbox(placedNd);
+      setPlaced({ placedNd, anchor, placedBbox });
       setParams(DEFAULT_TRANSFORM);
+
+      if (options?.fitToNetwork) {
+        mapRef.current?.flyTo(
+          [anchor.lng, anchor.lat],
+          [placedBbox.minX, placedBbox.minY, placedBbox.maxX, placedBbox.maxY],
+        );
+      }
     },
     [loaded],
   );
@@ -181,7 +185,7 @@ export default function GeoreferencePage() {
 
   const handlePlaceAtMapCenter = useCallback(() => {
     if (!loaded || !mapRef.current) return;
-    placeAt(mapRef.current.getCenter());
+    placeAt(mapRef.current.getCenter(), { fitToNetwork: true });
   }, [loaded, placeAt]);
 
   const transformedGeoJson: FeatureCollection | null = useMemo(() => {
