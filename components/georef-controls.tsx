@@ -10,22 +10,38 @@ import {
   CommandList,
   CommandLoading,
 } from "cmdk";
-import { Download, MapPin, RotateCcw, Target, X } from "lucide-react";
+import {
+  Crosshair,
+  Download,
+  MapPin,
+  Plus,
+  RotateCcw,
+  Target,
+  X,
+} from "lucide-react";
 import { geocode, type GeocodeResult } from "@/lib/geocoding";
 import {
   DEFAULT_TRANSFORM,
   type TransformParams,
 } from "@/lib/network-transform";
 import type { LatLng } from "@/lib/network-placement";
+import type { GroundControlPoint } from "@/lib/gcp-solve";
 
 interface GeorefControlsProps {
   anchor: LatLng | null;
   params: TransformParams;
   canDownload: boolean;
   units: "US" | "SI" | null;
+  nodeIds: string[];
+  gcps: GroundControlPoint[];
+  pendingGcpNodeId: string | null;
+  maxGcps: number;
   onGeocodeSelect: (result: GeocodeResult) => void;
   onPlaceAtMapCenter: () => void;
   onClearPlacement: () => void;
+  onBeginGcpPick: (nodeId: string) => void;
+  onCancelGcpPick: () => void;
+  onRemoveGcp: (index: number) => void;
   onReset: () => void;
   onDownload: () => void;
 }
@@ -35,9 +51,16 @@ export function GeorefControls({
   params,
   canDownload,
   units,
+  nodeIds,
+  gcps,
+  pendingGcpNodeId,
+  maxGcps,
   onGeocodeSelect,
   onPlaceAtMapCenter,
   onClearPlacement,
+  onBeginGcpPick,
+  onCancelGcpPick,
+  onRemoveGcp,
   onReset,
   onDownload,
 }: GeorefControlsProps) {
@@ -136,6 +159,18 @@ export function GeorefControls({
       )}
 
       {anchor && (
+        <GcpSection
+          nodeIds={nodeIds}
+          gcps={gcps}
+          pendingGcpNodeId={pendingGcpNodeId}
+          maxGcps={maxGcps}
+          onBeginPick={onBeginGcpPick}
+          onCancelPick={onCancelGcpPick}
+          onRemove={onRemoveGcp}
+        />
+      )}
+
+      {anchor && (
         <div className="text-xs text-gray-500 space-y-1">
           <p className="font-medium text-gray-700">Lock mode shortcuts</p>
           <p>Drag body to move · corners to rotate · edges to scale</p>
@@ -171,6 +206,192 @@ export function GeorefControls({
         </button>
       </div>
     </div>
+  );
+}
+
+interface GcpSectionProps {
+  nodeIds: string[];
+  gcps: GroundControlPoint[];
+  pendingGcpNodeId: string | null;
+  maxGcps: number;
+  onBeginPick: (nodeId: string) => void;
+  onCancelPick: () => void;
+  onRemove: (index: number) => void;
+}
+
+function GcpSection({
+  nodeIds,
+  gcps,
+  pendingGcpNodeId,
+  maxGcps,
+  onBeginPick,
+  onCancelPick,
+  onRemove,
+}: GcpSectionProps) {
+  const [stage, setStage] = React.useState<"idle" | "node">("idle");
+
+  // If a pick is in flight externally, never show the node-search stage.
+  const waitingMap = pendingGcpNodeId !== null;
+  const atCapacity = gcps.length >= maxGcps;
+  const usedIds = new Set(gcps.map((g) => g.nodeId));
+  const selectable = nodeIds.filter((id) => !usedIds.has(id));
+
+  return (
+    <div className="rounded-md border border-gray-200 p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-gray-800">
+          Ground control points
+        </h3>
+        <span className="text-xs text-gray-500">
+          {gcps.length} / {maxGcps}
+        </span>
+      </div>
+      <p className="text-xs text-gray-500">
+        Pin one or two junctions to exact locations. Scale, rotation, and
+        offset will solve automatically.
+      </p>
+
+      {gcps.length > 0 && (
+        <ul className="space-y-1">
+          {gcps.map((g, i) => (
+            <li
+              key={`${g.nodeId}-${i}`}
+              className="flex items-center justify-between gap-2 text-xs bg-orange-50 border border-orange-200 rounded px-2 py-1"
+            >
+              <div className="min-w-0">
+                <div className="font-mono text-orange-900 truncate">
+                  {g.nodeId}
+                </div>
+                <div className="font-mono text-[10px] text-orange-800/80">
+                  {g.target.lat.toFixed(5)}, {g.target.lng.toFixed(5)}
+                </div>
+              </div>
+              <button
+                onClick={() => onRemove(i)}
+                className="text-orange-700 hover:text-orange-900"
+                title="Remove this control point"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {waitingMap ? (
+        <div className="flex items-center justify-between gap-2 rounded bg-orange-100 border border-orange-300 px-2 py-2 text-xs">
+          <div className="flex items-center gap-1.5 text-orange-900">
+            <Crosshair className="h-3.5 w-3.5" />
+            Click on the map to place
+            <span className="font-mono font-semibold">
+              {pendingGcpNodeId}
+            </span>
+          </div>
+          <button
+            onClick={onCancelPick}
+            className="text-orange-800 hover:underline"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : stage === "node" ? (
+        <div className="space-y-2">
+          <NodeSearch
+            nodeIds={selectable}
+            onSelect={(id) => {
+              setStage("idle");
+              onBeginPick(id);
+            }}
+          />
+          <button
+            onClick={() => setStage("idle")}
+            className="text-xs text-gray-600 hover:underline"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <button
+          disabled={atCapacity || selectable.length === 0}
+          onClick={() => setStage("node")}
+          className={`w-full flex items-center justify-center gap-1 px-3 py-1.5 rounded text-xs font-medium border ${
+            atCapacity || selectable.length === 0
+              ? "border-gray-200 text-gray-400 cursor-not-allowed"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          <Plus className="h-3.5 w-3.5" />
+          {atCapacity ? "Maximum reached" : "Add control point"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function NodeSearch({
+  nodeIds,
+  onSelect,
+}: {
+  nodeIds: string[];
+  onSelect: (id: string) => void;
+}) {
+  const [query, setQuery] = React.useState("");
+  const [open, setOpen] = React.useState(true);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+
+  React.useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const matches = React.useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return nodeIds.slice(0, 30);
+    const scored: Array<{ id: string; rank: number }> = [];
+    for (const id of nodeIds) {
+      const lower = id.toLowerCase();
+      if (lower === q) scored.push({ id, rank: 0 });
+      else if (lower.startsWith(q)) scored.push({ id, rank: 1 });
+      else if (lower.includes(q)) scored.push({ id, rank: 2 });
+    }
+    scored.sort(
+      (a, b) => a.rank - b.rank || a.id.localeCompare(b.id),
+    );
+    return scored.slice(0, 30).map((s) => s.id);
+  }, [query, nodeIds]);
+
+  return (
+    <Command shouldFilter={false} className="relative">
+      <CommandInput
+        ref={inputRef}
+        value={query}
+        onValueChange={setQuery}
+        onFocus={() => setOpen(true)}
+        placeholder="Search junction or node ID"
+        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      {open && (
+        <div className="mt-1 max-h-48 overflow-auto rounded-md border border-gray-200 bg-white shadow-sm">
+          <CommandList>
+            <CommandEmpty className="py-2 px-3 text-xs text-gray-500">
+              No matching nodes.
+            </CommandEmpty>
+            <CommandGroup>
+              {matches.map((id) => (
+                <CommandItem
+                  key={id}
+                  value={id}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onSelect={() => onSelect(id)}
+                  className="px-3 py-1.5 text-sm cursor-pointer rounded hover:bg-orange-100 font-mono"
+                >
+                  {id}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </div>
+      )}
+    </Command>
   );
 }
 

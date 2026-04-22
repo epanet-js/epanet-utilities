@@ -71,6 +71,11 @@ interface GeorefMapProps {
   anchor: LatLng | null;
   params: TransformParams;
   onParamsChange: (p: TransformParams) => void;
+  /** Target points for each ground control point — rendered as orange pins. */
+  gcpsGeoJSON?: FeatureCollection | null;
+  /** When true, next map click fires onMapClick and the cursor is a crosshair. */
+  waitingForMapClick?: boolean;
+  onMapClick?: (latLng: LatLng) => void;
 }
 
 const TARGET_NUDGE_PX = 12;
@@ -94,6 +99,9 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
       anchor,
       params,
       onParamsChange,
+      gcpsGeoJSON,
+      waitingForMapClick,
+      onMapClick,
     },
     ref,
   ) {
@@ -113,6 +121,7 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
     const anchorRef = useRef(anchor);
     const onParamsChangeRef = useRef(onParamsChange);
     const bboxCornersRef = useRef(bboxCorners);
+    const onMapClickRef = useRef(onMapClick);
     useEffect(() => {
       paramsRef.current = params;
     }, [params]);
@@ -125,6 +134,9 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
     useEffect(() => {
       bboxCornersRef.current = bboxCorners;
     }, [bboxCorners]);
+    useEffect(() => {
+      onMapClickRef.current = onMapClick;
+    }, [onMapClick]);
 
     // Init Mapbox once.
     useEffect(() => {
@@ -260,6 +272,74 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
         minzoom: 12,
       });
     }, [networkGeoJSON, mapLoaded, styleTick]);
+
+    // Maintain the GCP marker layer.
+    useEffect(() => {
+      if (!map.current || !mapLoaded) return;
+      const m = map.current;
+      const existing = m.getSource("gcps") as
+        | mapboxgl.GeoJSONSource
+        | undefined;
+
+      if (!gcpsGeoJSON || gcpsGeoJSON.features.length === 0) {
+        if (m.getLayer("gcp-labels")) m.removeLayer("gcp-labels");
+        if (m.getLayer("gcp-points")) m.removeLayer("gcp-points");
+        if (existing) m.removeSource("gcps");
+        return;
+      }
+
+      if (existing) {
+        existing.setData(gcpsGeoJSON);
+        return;
+      }
+
+      m.addSource("gcps", { type: "geojson", data: gcpsGeoJSON });
+      m.addLayer({
+        id: "gcp-points",
+        type: "circle",
+        source: "gcps",
+        paint: {
+          "circle-radius": 8,
+          "circle-color": "#f97316",
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "#ffffff",
+        },
+      });
+      m.addLayer({
+        id: "gcp-labels",
+        type: "symbol",
+        source: "gcps",
+        layout: {
+          "text-field": ["get", "label"],
+          "text-size": 11,
+          "text-offset": [0, 1.2],
+          "text-anchor": "top",
+          "text-allow-overlap": true,
+        },
+        paint: {
+          "text-color": "#9a3412",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5,
+        },
+      });
+    }, [gcpsGeoJSON, mapLoaded, styleTick]);
+
+    // One-shot map click listener when waiting to pick a GCP target.
+    useEffect(() => {
+      if (!waitingForMapClick || !map.current || !mapLoaded) return;
+      const m = map.current;
+      const canvas = m.getCanvas();
+      const prevCursor = canvas.style.cursor;
+      canvas.style.cursor = "crosshair";
+      const handler = (ev: mapboxgl.MapMouseEvent) => {
+        onMapClickRef.current?.({ lng: ev.lngLat.lng, lat: ev.lngLat.lat });
+      };
+      m.once("click", handler);
+      return () => {
+        m.off("click", handler);
+        canvas.style.cursor = prevCursor;
+      };
+    }, [waitingForMapClick, mapLoaded]);
 
     // Project bbox corners to pixel space for the overlay. Depends on
     // `moveTick` so it updates on every map move.
@@ -600,7 +680,10 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
                   stroke="#38bdf8"
                   strokeWidth={2}
                   strokeDasharray="6 4"
-                  style={{ pointerEvents: "all", cursor: "move" }}
+                  style={{
+                    pointerEvents: waitingForMapClick ? "none" : "all",
+                    cursor: "move",
+                  }}
                   onPointerDown={handlePointerDown("body")}
                   onPointerMove={handlePointerMove}
                   onPointerUp={handlePointerUp}
@@ -618,7 +701,10 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
                     stroke="#0ea5e9"
                     strokeWidth={2}
                     rx={2}
-                    style={{ pointerEvents: "all", cursor: "nwse-resize" }}
+                    style={{
+                      pointerEvents: waitingForMapClick ? "none" : "all",
+                      cursor: "nwse-resize",
+                    }}
                     onPointerDown={handlePointerDown("edge")}
                     onPointerMove={handlePointerMove}
                     onPointerUp={handlePointerUp}
@@ -635,7 +721,10 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
                     fill="#ffffff"
                     stroke="#f59e0b"
                     strokeWidth={2}
-                    style={{ pointerEvents: "all", cursor: "grab" }}
+                    style={{
+                      pointerEvents: waitingForMapClick ? "none" : "all",
+                      cursor: "grab",
+                    }}
                     onPointerDown={handlePointerDown("corner")}
                     onPointerMove={handlePointerMove}
                     onPointerUp={handlePointerUp}

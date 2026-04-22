@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FeatureCollection } from "geojson";
 import { FileUploader } from "@/components/file-uploader";
 import { AppHeader } from "@/components/app-header";
@@ -34,8 +34,14 @@ import {
   transformLatLngPoint,
   type LatLng,
 } from "@/lib/network-placement";
+import {
+  solveTransformFromGcps,
+  type GroundControlPoint,
+} from "@/lib/gcp-solve";
 import type { GeocodeResult } from "@/lib/geocoding";
 import type { NetworkData } from "@/lib/types";
+
+const MAX_GCPS = 2;
 
 interface LoadedFile {
   networkData: NetworkData;
@@ -78,6 +84,8 @@ export default function GeoreferencePage() {
   const [loaded, setLoaded] = useState<LoadedFile | null>(null);
   const [placed, setPlaced] = useState<PlacedNetwork | null>(null);
   const [params, setParams] = useState<TransformParams>(DEFAULT_TRANSFORM);
+  const [gcps, setGcps] = useState<GroundControlPoint[]>([]);
+  const [pendingGcpNodeId, setPendingGcpNodeId] = useState<string | null>(null);
   const mapRef = useRef<GeorefMapHandle | null>(null);
 
   const handleFileLoaded = useCallback(async (file: File | null) => {
@@ -191,7 +199,69 @@ export default function GeoreferencePage() {
   const handleClearPlacement = useCallback(() => {
     setPlaced(null);
     setParams(DEFAULT_TRANSFORM);
+    setGcps([]);
+    setPendingGcpNodeId(null);
   }, []);
+
+  const handleBeginGcpPick = useCallback((nodeId: string) => {
+    setPendingGcpNodeId(nodeId);
+  }, []);
+
+  const handleCancelGcpPick = useCallback(() => {
+    setPendingGcpNodeId(null);
+  }, []);
+
+  const handleMapClick = useCallback(
+    (target: LatLng) => {
+      if (!pendingGcpNodeId) return;
+      setGcps((prev) => {
+        const without = prev.filter((g) => g.nodeId !== pendingGcpNodeId);
+        const next = [...without, { nodeId: pendingGcpNodeId, target }];
+        return next.slice(-MAX_GCPS);
+      });
+      setPendingGcpNodeId(null);
+    },
+    [pendingGcpNodeId],
+  );
+
+  const handleRemoveGcp = useCallback((index: number) => {
+    setGcps((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  // Re-solve the transform whenever GCPs change.
+  useEffect(() => {
+    if (!placed || gcps.length === 0) return;
+    const solved = solveTransformFromGcps(
+      gcps,
+      placed.placedNd,
+      placed.anchor,
+      params,
+    );
+    if (solved) setParams(solved);
+    // `params` is intentionally excluded — we only re-solve when GCPs change,
+    // so manual nudges don't get clobbered by the last-solved value.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gcps, placed]);
+
+  const nodeIds = useMemo(
+    () => (loaded ? Object.keys(loaded.networkData.coordinates) : []),
+    [loaded],
+  );
+
+  const gcpsGeoJSON: FeatureCollection | null = useMemo(() => {
+    if (gcps.length === 0) return null;
+    return {
+      type: "FeatureCollection",
+      features: gcps.map((g) => ({
+        type: "Feature",
+        properties: { label: g.nodeId },
+        geometry: {
+          type: "Point",
+          coordinates: [g.target.lng, g.target.lat],
+        },
+      })),
+    };
+  }, [gcps]);
 
   const transformedGeoJson: FeatureCollection | null = useMemo(() => {
     if (!placed || !loaded) return null;
@@ -282,9 +352,16 @@ export default function GeoreferencePage() {
                 params={params}
                 canDownload={!!placed}
                 units={loaded.units}
+                nodeIds={nodeIds}
+                gcps={gcps}
+                pendingGcpNodeId={pendingGcpNodeId}
+                maxGcps={MAX_GCPS}
                 onGeocodeSelect={handleGeocodeSelect}
                 onPlaceAtMapCenter={handlePlaceAtMapCenter}
                 onClearPlacement={handleClearPlacement}
+                onBeginGcpPick={handleBeginGcpPick}
+                onCancelGcpPick={handleCancelGcpPick}
+                onRemoveGcp={handleRemoveGcp}
                 onReset={handleReset}
                 onDownload={handleDownload}
               />
@@ -298,6 +375,9 @@ export default function GeoreferencePage() {
           anchor={placed?.anchor ?? null}
           params={params}
           onParamsChange={setParams}
+          gcpsGeoJSON={gcpsGeoJSON}
+          waitingForMapClick={pendingGcpNodeId !== null}
+          onMapClick={handleMapClick}
         />
       </div>
     </>
