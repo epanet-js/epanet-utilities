@@ -10,7 +10,7 @@ import {
 } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Lock, Unlock } from "lucide-react";
+import { Lock, Map as MapIcon, Satellite, Tag, Unlock } from "lucide-react";
 import { FeatureCollection } from "geojson";
 import { useMapResizeObserver } from "@/hooks/use-mapresize-observer";
 import {
@@ -32,6 +32,13 @@ const GESTURE_HANDLERS = [
   "keyboard",
   "touchPitch",
 ] as const;
+
+type Basemap = "satellite" | "light";
+
+const BASEMAP_STYLES: Record<Basemap, string> = {
+  satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+  light: "mapbox://styles/mapbox/light-v11",
+};
 
 export interface GeorefMapHandle {
   flyTo: (
@@ -81,8 +88,12 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [mapLoaded, setMapLoaded] = useState(false);
     const [locked, setLocked] = useState(false);
+    const [basemap, setBasemap] = useState<Basemap>("satellite");
+    const [showLabels, setShowLabels] = useState(true);
     // Bumped on every map 'move' so the SVG re-projects handles.
     const [moveTick, setMoveTick] = useState(0);
+    // Bumped every time a new style finishes loading (setStyle wipes sources).
+    const [styleTick, setStyleTick] = useState(0);
 
     const paramsRef = useRef(params);
     const anchorRef = useRef(anchor);
@@ -108,11 +119,16 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
         mapboxgl.accessToken = MAPBOX_TOKEN;
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
-          style: "mapbox://styles/mapbox/satellite-streets-v12",
+          style: BASEMAP_STYLES.satellite,
+          projection: "mercator",
           center: [0, 20],
           zoom: 1.5,
         });
-        map.current.on("load", () => setMapLoaded(true));
+        map.current.on("load", () => {
+          setMapLoaded(true);
+          setStyleTick((t) => t + 1);
+        });
+        map.current.on("style.load", () => setStyleTick((t) => t + 1));
         map.current.on("move", () => setMoveTick((t) => t + 1));
         return () => {
           map.current?.remove();
@@ -123,6 +139,27 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
         setMapLoaded(false);
       }
     }, []);
+
+    // Switch basemap style. setStyle wipes user-added sources/layers; the
+    // network layer effect below depends on `styleTick` so it re-adds them
+    // once `style.load` fires.
+    useEffect(() => {
+      if (!map.current || !mapLoaded) return;
+      map.current.setStyle(BASEMAP_STYLES[basemap]);
+    }, [basemap, mapLoaded]);
+
+    // Toggle label visibility. Re-applies on style swaps.
+    useEffect(() => {
+      if (!map.current || !mapLoaded) return;
+      const m = map.current;
+      const layers = m.getStyle()?.layers ?? [];
+      const visibility = showLabels ? "visible" : "none";
+      for (const layer of layers) {
+        if (layer.type === "symbol") {
+          m.setLayoutProperty(layer.id, "visibility", visibility);
+        }
+      }
+    }, [showLabels, mapLoaded, styleTick]);
 
     useMapResizeObserver(map, mapContainer);
 
@@ -163,7 +200,8 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
       m.getCanvas().style.cursor = locked ? "grab" : "";
     }, [locked, mapLoaded]);
 
-    // Maintain the network source/layers.
+    // Maintain the network source/layers. Depends on styleTick so we re-add
+    // after a basemap switch wipes the style's sources.
     useEffect(() => {
       if (!map.current || !mapLoaded) return;
       const m = map.current;
@@ -207,7 +245,7 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
         },
         minzoom: 12,
       });
-    }, [networkGeoJSON, mapLoaded]);
+    }, [networkGeoJSON, mapLoaded, styleTick]);
 
     // Project bbox corners to pixel space for the overlay. Depends on
     // `moveTick` so it updates on every map move.
@@ -484,8 +522,8 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
             )}
           </svg>
 
-          {/* Lock toggle */}
-          <div className="absolute top-3 right-3 z-10">
+          {/* Top-right controls */}
+          <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-2">
             <button
               onClick={() => setLocked((v) => !v)}
               disabled={!canLock}
@@ -513,6 +551,44 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
                   <Unlock className="h-4 w-4" /> Unlocked
                 </>
               )}
+            </button>
+
+            <div className="flex rounded-md shadow-md border border-gray-300 overflow-hidden bg-white">
+              <button
+                onClick={() => setBasemap("satellite")}
+                className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium ${
+                  basemap === "satellite"
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+                title="Satellite basemap"
+              >
+                <Satellite className="h-4 w-4" /> Satellite
+              </button>
+              <button
+                onClick={() => setBasemap("light")}
+                className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-l border-gray-300 ${
+                  basemap === "light"
+                    ? "bg-gray-900 text-white"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+                title="Light basemap"
+              >
+                <MapIcon className="h-4 w-4" /> Light
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowLabels((v) => !v)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium shadow-md border ${
+                showLabels
+                  ? "bg-white text-gray-800 border-gray-300 hover:bg-gray-50"
+                  : "bg-gray-900 text-white border-gray-900 hover:bg-gray-800"
+              }`}
+              title={showLabels ? "Hide map labels" : "Show map labels"}
+            >
+              <Tag className="h-4 w-4" />
+              {showLabels ? "Labels on" : "Labels off"}
             </button>
           </div>
 
