@@ -76,6 +76,10 @@ interface GeorefMapProps {
   /** When true, next map click fires onMapClick and the cursor is a crosshair. */
   waitingForMapClick?: boolean;
   onMapClick?: (latLng: LatLng) => void;
+  /** When true, clicks that hit a network node fire onNodePick. Runs until a
+   *  node is hit (clicks on empty ground are ignored). */
+  waitingForNodePick?: boolean;
+  onNodePick?: (nodeId: string) => void;
 }
 
 const TARGET_NUDGE_PX = 12;
@@ -102,6 +106,8 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
       gcpsGeoJSON,
       waitingForMapClick,
       onMapClick,
+      waitingForNodePick,
+      onNodePick,
     },
     ref,
   ) {
@@ -122,6 +128,7 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
     const onParamsChangeRef = useRef(onParamsChange);
     const bboxCornersRef = useRef(bboxCorners);
     const onMapClickRef = useRef(onMapClick);
+    const onNodePickRef = useRef(onNodePick);
     useEffect(() => {
       paramsRef.current = params;
     }, [params]);
@@ -137,6 +144,9 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
     useEffect(() => {
       onMapClickRef.current = onMapClick;
     }, [onMapClick]);
+    useEffect(() => {
+      onNodePickRef.current = onNodePick;
+    }, [onNodePick]);
 
     // Init Mapbox once.
     useEffect(() => {
@@ -340,6 +350,48 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
         canvas.style.cursor = prevCursor;
       };
     }, [waitingForMapClick, mapLoaded]);
+
+    // Persistent listener while the user is picking a GCP node from the map.
+    // Uses a box around the click point so tiny circles are still clickable.
+    useEffect(() => {
+      if (!waitingForNodePick || !map.current || !mapLoaded) return;
+      const m = map.current;
+      const canvas = m.getCanvas();
+      const prevCursor = canvas.style.cursor;
+      canvas.style.cursor = "crosshair";
+
+      const click = (ev: mapboxgl.MapMouseEvent) => {
+        if (!m.getLayer("network-points")) return;
+        const p = ev.point;
+        const bbox: [[number, number], [number, number]] = [
+          [p.x - 10, p.y - 10],
+          [p.x + 10, p.y + 10],
+        ];
+        const features = m.queryRenderedFeatures(bbox, {
+          layers: ["network-points"],
+        });
+        const id = features[0]?.properties?.id;
+        if (typeof id === "string") {
+          onNodePickRef.current?.(id);
+        }
+      };
+      const enter = () => {
+        canvas.style.cursor = "pointer";
+      };
+      const leave = () => {
+        canvas.style.cursor = "crosshair";
+      };
+
+      m.on("click", click);
+      m.on("mouseenter", "network-points", enter);
+      m.on("mouseleave", "network-points", leave);
+      return () => {
+        m.off("click", click);
+        m.off("mouseenter", "network-points", enter);
+        m.off("mouseleave", "network-points", leave);
+        canvas.style.cursor = prevCursor;
+      };
+    }, [waitingForNodePick, mapLoaded]);
 
     // Project bbox corners to pixel space for the overlay. Depends on
     // `moveTick` so it updates on every map move.
@@ -681,7 +733,8 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
                   strokeWidth={2}
                   strokeDasharray="6 4"
                   style={{
-                    pointerEvents: waitingForMapClick ? "none" : "all",
+                    pointerEvents:
+                      waitingForMapClick || waitingForNodePick ? "none" : "all",
                     cursor: "move",
                   }}
                   onPointerDown={handlePointerDown("body")}
@@ -702,7 +755,8 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
                     strokeWidth={2}
                     rx={2}
                     style={{
-                      pointerEvents: waitingForMapClick ? "none" : "all",
+                      pointerEvents:
+                      waitingForMapClick || waitingForNodePick ? "none" : "all",
                       cursor: "nwse-resize",
                     }}
                     onPointerDown={handlePointerDown("edge")}
@@ -722,7 +776,8 @@ export const GeorefMap = forwardRef<GeorefMapHandle, GeorefMapProps>(
                     stroke="#f59e0b"
                     strokeWidth={2}
                     style={{
-                      pointerEvents: waitingForMapClick ? "none" : "all",
+                      pointerEvents:
+                      waitingForMapClick || waitingForNodePick ? "none" : "all",
                       cursor: "grab",
                     }}
                     onPointerDown={handlePointerDown("corner")}

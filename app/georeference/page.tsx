@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FeatureCollection } from "geojson";
 import { FileUploader } from "@/components/file-uploader";
 import { AppHeader } from "@/components/app-header";
-import { GeorefControls } from "@/components/georef-controls";
+import { GeorefControls, type GcpPickStage } from "@/components/georef-controls";
 import { GeorefMap, type GeorefMapHandle } from "@/components/georef-map";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -86,9 +86,22 @@ export default function GeoreferencePage() {
   const [params, setParams] = useState<TransformParams>(DEFAULT_TRANSFORM);
   const [gcps, setGcps] = useState<GroundControlPoint[]>([]);
   const [pendingGcpNodeId, setPendingGcpNodeId] = useState<string | null>(null);
+  const [gcpPickStage, setGcpPickStage] = useState<GcpPickStage>(null);
   const mapRef = useRef<GeorefMapHandle | null>(null);
 
+  // Any manual param update (from bbox drag, nudge buttons, keyboard, or
+  // map-initiated transforms) should discard the current GCP solve, since
+  // the pins no longer reflect the on-map positions.
+  const handleManualParams = useCallback((p: TransformParams) => {
+    setParams(p);
+    setGcps((prev) => (prev.length > 0 ? [] : prev));
+  }, []);
+
   const handleFileLoaded = useCallback(async (file: File | null) => {
+    // Reset all GCP-related state whenever the loaded file changes.
+    setGcps([]);
+    setPendingGcpNodeId(null);
+    setGcpPickStage(null);
     if (!file) {
       setLoaded(null);
       setPlaced(null);
@@ -167,6 +180,9 @@ export default function GeoreferencePage() {
       const placedBbox = computeBbox(placedNd);
       setPlaced({ placedNd, anchor, placedBbox });
       setParams(DEFAULT_TRANSFORM);
+      setGcps([]);
+      setPendingGcpNodeId(null);
+      setGcpPickStage(null);
 
       if (options?.fitToNetwork) {
         mapRef.current?.flyTo(
@@ -201,14 +217,22 @@ export default function GeoreferencePage() {
     setParams(DEFAULT_TRANSFORM);
     setGcps([]);
     setPendingGcpNodeId(null);
+    setGcpPickStage(null);
   }, []);
 
-  const handleBeginGcpPick = useCallback((nodeId: string) => {
+  const handleStartGcpNodePick = useCallback(() => {
+    setPendingGcpNodeId(null);
+    setGcpPickStage("node");
+  }, []);
+
+  const handleChooseGcpNode = useCallback((nodeId: string) => {
     setPendingGcpNodeId(nodeId);
+    setGcpPickStage("target");
   }, []);
 
   const handleCancelGcpPick = useCallback(() => {
     setPendingGcpNodeId(null);
+    setGcpPickStage(null);
   }, []);
 
   const handleMapClick = useCallback(
@@ -220,6 +244,7 @@ export default function GeoreferencePage() {
         return next.slice(-MAX_GCPS);
       });
       setPendingGcpNodeId(null);
+      setGcpPickStage(null);
     },
     [pendingGcpNodeId],
   );
@@ -288,7 +313,10 @@ export default function GeoreferencePage() {
     );
   }, [placed, params]);
 
-  const handleReset = useCallback(() => setParams(DEFAULT_TRANSFORM), []);
+  const handleReset = useCallback(() => {
+    setParams(DEFAULT_TRANSFORM);
+    setGcps([]);
+  }, []);
 
   const handleDownload = useCallback(() => {
     if (!placed || !loaded) return;
@@ -355,11 +383,13 @@ export default function GeoreferencePage() {
                 nodeIds={nodeIds}
                 gcps={gcps}
                 pendingGcpNodeId={pendingGcpNodeId}
+                gcpPickStage={gcpPickStage}
                 maxGcps={MAX_GCPS}
                 onGeocodeSelect={handleGeocodeSelect}
                 onPlaceAtMapCenter={handlePlaceAtMapCenter}
                 onClearPlacement={handleClearPlacement}
-                onBeginGcpPick={handleBeginGcpPick}
+                onStartGcpNodePick={handleStartGcpNodePick}
+                onChooseGcpNode={handleChooseGcpNode}
                 onCancelGcpPick={handleCancelGcpPick}
                 onRemoveGcp={handleRemoveGcp}
                 onReset={handleReset}
@@ -374,10 +404,12 @@ export default function GeoreferencePage() {
           bboxCorners={bboxCorners}
           anchor={placed?.anchor ?? null}
           params={params}
-          onParamsChange={setParams}
+          onParamsChange={handleManualParams}
           gcpsGeoJSON={gcpsGeoJSON}
-          waitingForMapClick={pendingGcpNodeId !== null}
+          waitingForMapClick={gcpPickStage === "target"}
           onMapClick={handleMapClick}
+          waitingForNodePick={gcpPickStage === "node"}
+          onNodePick={handleChooseGcpNode}
         />
       </div>
     </>

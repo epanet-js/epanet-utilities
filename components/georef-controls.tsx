@@ -27,6 +27,8 @@ import {
 import type { LatLng } from "@/lib/network-placement";
 import type { GroundControlPoint } from "@/lib/gcp-solve";
 
+export type GcpPickStage = "node" | "target" | null;
+
 interface GeorefControlsProps {
   anchor: LatLng | null;
   params: TransformParams;
@@ -35,11 +37,13 @@ interface GeorefControlsProps {
   nodeIds: string[];
   gcps: GroundControlPoint[];
   pendingGcpNodeId: string | null;
+  gcpPickStage: GcpPickStage;
   maxGcps: number;
   onGeocodeSelect: (result: GeocodeResult) => void;
   onPlaceAtMapCenter: () => void;
   onClearPlacement: () => void;
-  onBeginGcpPick: (nodeId: string) => void;
+  onStartGcpNodePick: () => void;
+  onChooseGcpNode: (nodeId: string) => void;
   onCancelGcpPick: () => void;
   onRemoveGcp: (index: number) => void;
   onReset: () => void;
@@ -54,11 +58,13 @@ export function GeorefControls({
   nodeIds,
   gcps,
   pendingGcpNodeId,
+  gcpPickStage,
   maxGcps,
   onGeocodeSelect,
   onPlaceAtMapCenter,
   onClearPlacement,
-  onBeginGcpPick,
+  onStartGcpNodePick,
+  onChooseGcpNode,
   onCancelGcpPick,
   onRemoveGcp,
   onReset,
@@ -163,8 +169,10 @@ export function GeorefControls({
           nodeIds={nodeIds}
           gcps={gcps}
           pendingGcpNodeId={pendingGcpNodeId}
+          gcpPickStage={gcpPickStage}
           maxGcps={maxGcps}
-          onBeginPick={onBeginGcpPick}
+          onStartNodePick={onStartGcpNodePick}
+          onChooseNode={onChooseGcpNode}
           onCancelPick={onCancelGcpPick}
           onRemove={onRemoveGcp}
         />
@@ -213,8 +221,10 @@ interface GcpSectionProps {
   nodeIds: string[];
   gcps: GroundControlPoint[];
   pendingGcpNodeId: string | null;
+  gcpPickStage: GcpPickStage;
   maxGcps: number;
-  onBeginPick: (nodeId: string) => void;
+  onStartNodePick: () => void;
+  onChooseNode: (nodeId: string) => void;
   onCancelPick: () => void;
   onRemove: (index: number) => void;
 }
@@ -223,15 +233,13 @@ function GcpSection({
   nodeIds,
   gcps,
   pendingGcpNodeId,
+  gcpPickStage,
   maxGcps,
-  onBeginPick,
+  onStartNodePick,
+  onChooseNode,
   onCancelPick,
   onRemove,
 }: GcpSectionProps) {
-  const [stage, setStage] = React.useState<"idle" | "node">("idle");
-
-  // If a pick is in flight externally, never show the node-search stage.
-  const waitingMap = pendingGcpNodeId !== null;
   const atCapacity = gcps.length >= maxGcps;
   const usedIds = new Set(gcps.map((g) => g.nodeId));
   const selectable = nodeIds.filter((id) => !usedIds.has(id));
@@ -278,14 +286,12 @@ function GcpSection({
         </ul>
       )}
 
-      {waitingMap ? (
+      {gcpPickStage === "target" ? (
         <div className="flex items-center justify-between gap-2 rounded bg-orange-100 border border-orange-300 px-2 py-2 text-xs">
           <div className="flex items-center gap-1.5 text-orange-900">
             <Crosshair className="h-3.5 w-3.5" />
             Click on the map to place
-            <span className="font-mono font-semibold">
-              {pendingGcpNodeId}
-            </span>
+            <span className="font-mono font-semibold">{pendingGcpNodeId}</span>
           </div>
           <button
             onClick={onCancelPick}
@@ -294,17 +300,14 @@ function GcpSection({
             Cancel
           </button>
         </div>
-      ) : stage === "node" ? (
+      ) : gcpPickStage === "node" ? (
         <div className="space-y-2">
-          <NodeSearch
-            nodeIds={selectable}
-            onSelect={(id) => {
-              setStage("idle");
-              onBeginPick(id);
-            }}
-          />
+          <div className="text-[11px] text-gray-600">
+            Search below, or click a junction on the map.
+          </div>
+          <NodeSearch nodeIds={selectable} onSelect={onChooseNode} />
           <button
-            onClick={() => setStage("idle")}
+            onClick={onCancelPick}
             className="text-xs text-gray-600 hover:underline"
           >
             Cancel
@@ -313,7 +316,7 @@ function GcpSection({
       ) : (
         <button
           disabled={atCapacity || selectable.length === 0}
-          onClick={() => setStage("node")}
+          onClick={onStartNodePick}
           className={`w-full flex items-center justify-center gap-1 px-3 py-1.5 rounded text-xs font-medium border ${
             atCapacity || selectable.length === 0
               ? "border-gray-200 text-gray-400 cursor-not-allowed"
