@@ -250,8 +250,9 @@ export function MapDisplay({
 
     // Fit bounds. When an `originalGeoJSON` is supplied the original drives the
     // fit (see the effect below) so the camera doesn't jump on every transform
-    // tick. Without an original, fit to the primary layer on first render.
-    if (hasOriginal || existing) return;
+    // tick. Without an original (e.g. projection converter), fit on every
+    // data change so switching projections re-centers the camera.
+    if (hasOriginal) return;
 
     const coordinates = collectCoords(processedGeoJSON);
     if (coordinates.length === 0) return;
