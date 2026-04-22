@@ -1,5 +1,5 @@
 import { FeatureCollection, Feature, Point, LineString } from "geojson";
-import type { TimeStepResult } from "./types";
+import type { NetworkData, TimeStepResult } from "./types";
 
 /******************************************************
  * INTERFACES & TYPES
@@ -867,6 +867,48 @@ function parseVertices(
 
   link.geometry.coordinates.push([x, y]);
   return data;
+}
+
+/******************************************************
+ * APPLY NETWORK DATA: Rebuild geometries from updated coords/vertices
+ * Given an already-parsed GeoJSON and fresh coordinates/vertices, produce
+ * a new FeatureCollection with geometries reflecting the new positions.
+ * Feature properties are preserved.
+ ******************************************************/
+
+export function applyNetworkDataToGeoJson(
+  original: FeatureCollection,
+  nd: NetworkData,
+): FeatureCollection {
+  return {
+    ...original,
+    features: original.features.map((feature) => {
+      const props = feature.properties;
+      if (!props) return feature;
+
+      if (props.type === "Node" && feature.geometry?.type === "Point") {
+        const coord = nd.coordinates[props.id];
+        if (!coord) return feature;
+        return {
+          ...feature,
+          geometry: { ...feature.geometry, coordinates: coord },
+        };
+      }
+
+      if (props.type === "Link" && feature.geometry?.type === "LineString") {
+        const us = nd.coordinates[props.usNodeId];
+        const ds = nd.coordinates[props.dsNodeId];
+        if (!us || !ds) return feature;
+        const mid = nd.vertices[props.id] ?? [];
+        return {
+          ...feature,
+          geometry: { ...feature.geometry, coordinates: [us, ...mid, ds] },
+        };
+      }
+
+      return feature;
+    }),
+  };
 }
 
 /******************************************************

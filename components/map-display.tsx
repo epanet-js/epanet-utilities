@@ -13,17 +13,59 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 interface MapDisplayProps {
   geoJSON: FeatureCollection<Geometry, GeoJsonProperties> | null;
+  originalGeoJSON?: FeatureCollection<Geometry, GeoJsonProperties> | null;
   projection?: Projection | null;
 }
 
-export function MapDisplay({ geoJSON, projection }: MapDisplayProps) {
+function reprojectIfNeeded(
+  geoJSON: FeatureCollection | null,
+  projection?: Projection | null,
+): FeatureCollection | null {
+  if (!geoJSON) return null;
+
+  const needsReprojection = !isLikelyLatLng(geoJSON);
+  if (!needsReprojection || !projection || projection.id === "EPSG:4326") {
+    return geoJSON;
+  }
+
+  try {
+    const reprojected = convertGeoJsonToWGS84Generic(geoJSON, projection.code);
+    if (isLikelyLatLng(reprojected)) return reprojected;
+    console.warn("Reprojection failed - data still not in lat/lng format");
+    return geoJSON;
+  } catch (error) {
+    console.error("Error reprojecting data:", error);
+    return geoJSON;
+  }
+}
+
+function collectCoords(
+  fc: FeatureCollection | null,
+): [number, number][] {
+  if (!fc) return [];
+  return fc.features.flatMap((feature) => {
+    if (!feature.geometry) return [];
+    if (feature.geometry.type === "Point") {
+      return [feature.geometry.coordinates as [number, number]];
+    } else if (feature.geometry.type === "LineString") {
+      return feature.geometry.coordinates as [number, number][];
+    }
+    return [];
+  });
+}
+
+export function MapDisplay({
+  geoJSON,
+  originalGeoJSON,
+  projection,
+}: MapDisplayProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [processedGeoJSON, setProcessedGeoJSON] = useState<FeatureCollection<
-    Geometry,
-    GeoJsonProperties
-  > | null>(null);
+  const [processedGeoJSON, setProcessedGeoJSON] =
+    useState<FeatureCollection | null>(null);
+  const [processedOriginalGeoJSON, setProcessedOriginalGeoJSON] =
+    useState<FeatureCollection | null>(null);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -58,77 +100,99 @@ export function MapDisplay({ geoJSON, projection }: MapDisplayProps) {
 
   useMapResizeObserver(map, mapContainer);
 
-  // Handle projection reprojection
+  // Reproject inputs when needed.
   useEffect(() => {
-    if (!geoJSON) {
-      setProcessedGeoJSON(null);
-      return;
-    }
-
-    // Check if data needs reprojection
-    const needsReprojection = !isLikelyLatLng(geoJSON);
-
-    if (needsReprojection && projection && projection.id !== "EPSG:4326") {
-      try {
-        const reprojectedData = convertGeoJsonToWGS84Generic(
-          geoJSON,
-          projection.code,
-        );
-
-        // Verify the reprojection was successful
-        if (isLikelyLatLng(reprojectedData)) {
-          setProcessedGeoJSON(reprojectedData);
-        } else {
-          console.warn(
-            "Reprojection failed - data still not in lat/lng format",
-          );
-          setProcessedGeoJSON(geoJSON); // Use original data as fallback
-        }
-      } catch (error) {
-        console.error("Error reprojecting data:", error);
-        setProcessedGeoJSON(geoJSON); // Use original data as fallback
-      }
-    } else {
-      // No reprojection needed, use original data
-      setProcessedGeoJSON(geoJSON);
-    }
+    setProcessedGeoJSON(reprojectIfNeeded(geoJSON, projection));
   }, [geoJSON, projection]);
 
   useEffect(() => {
+    setProcessedOriginalGeoJSON(
+      reprojectIfNeeded(originalGeoJSON ?? null, projection),
+    );
+  }, [originalGeoJSON, projection]);
+
+  // Manage the grey original underlay (added first so blue draws on top).
+  useEffect(() => {
     if (!map.current || !mapLoaded) return;
 
-    // Remove existing layers if they exist
-    if (map.current.getLayer("network-points")) {
-      map.current.removeLayer("network-points");
-    }
-    if (map.current.getLayer("network-lines")) {
-      map.current.removeLayer("network-lines");
-    }
-    if (map.current.getSource("network")) {
-      map.current.removeSource("network");
-    }
+    const m = map.current;
+
+    if (m.getLayer("original-points")) m.removeLayer("original-points");
+    if (m.getLayer("original-lines")) m.removeLayer("original-lines");
+    if (m.getSource("original")) m.removeSource("original");
+
+    if (!processedOriginalGeoJSON) return;
+
+    m.addSource("original", {
+      type: "geojson",
+      data: processedOriginalGeoJSON,
+    });
+
+    m.addLayer({
+      id: "original-lines",
+      type: "line",
+      source: "original",
+      filter: ["==", ["get", "type"], "Link"],
+      paint: {
+        "line-color": "#d1d5db",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.5, 16, 4],
+      },
+    });
+
+    m.addLayer({
+      id: "original-points",
+      type: "circle",
+      source: "original",
+      filter: ["==", ["get", "type"], "Node"],
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 12, 0.5, 16, 5],
+        "circle-color": "#d1d5db",
+        "circle-stroke-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          13,
+          0.5,
+          16,
+          1,
+        ],
+        "circle-stroke-color": "#f3f4f6",
+      },
+      minzoom: 13,
+    });
+  }, [processedOriginalGeoJSON, mapLoaded]);
+
+  // Manage the blue (transformed / primary) network layer.
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    const m = map.current;
+    const hasOriginal = !!processedOriginalGeoJSON;
+
+    if (m.getLayer("network-points")) m.removeLayer("network-points");
+    if (m.getLayer("network-lines")) m.removeLayer("network-lines");
+    if (m.getSource("network")) m.removeSource("network");
 
     if (!processedGeoJSON) {
-      setTimeout(() => {
-        if (map.current) {
-          map.current.setZoom(0);
-          map.current.setCenter([0, 0]);
-        }
-      }, 100);
-
-      // @ts-expect-error // Types are wrong, it does accept null to reset
-      map.current.setMaxBounds(null);
+      if (!hasOriginal) {
+        setTimeout(() => {
+          if (map.current) {
+            map.current.setZoom(0);
+            map.current.setCenter([0, 0]);
+          }
+        }, 100);
+        // @ts-expect-error // Types are wrong, it does accept null to reset
+        m.setMaxBounds(null);
+      }
       return;
     }
 
-    // Add new source and layers
-    map.current.addSource("network", {
+    m.addSource("network", {
       type: "geojson",
       data: processedGeoJSON,
     });
 
-    // Add lines
-    map.current.addLayer({
+    m.addLayer({
       id: "network-lines",
       type: "line",
       source: "network",
@@ -139,8 +203,7 @@ export function MapDisplay({ geoJSON, projection }: MapDisplayProps) {
       },
     });
 
-    // Add points
-    map.current.addLayer({
+    m.addLayer({
       id: "network-points",
       type: "circle",
       source: "network",
@@ -162,47 +225,79 @@ export function MapDisplay({ geoJSON, projection }: MapDisplayProps) {
       minzoom: 13,
     });
 
-    // Compute bounds from processedGeoJSON data
-    const coordinates = processedGeoJSON.features.flatMap((feature) => {
-      if (feature.geometry.type === "Point") {
-        return [feature.geometry.coordinates as [number, number]];
-      } else if (feature.geometry.type === "LineString") {
-        return feature.geometry.coordinates as [number, number][];
-      }
-      return [];
-    });
+    // Fit bounds. When an `originalGeoJSON` is supplied the original drives the
+    // fit (see the effect below) so the camera doesn't jump on every transform
+    // tick. Without an original, fit to the primary layer as before.
+    if (hasOriginal) return;
 
-    if (coordinates.length > 0) {
-      const bounds = coordinates.reduce(
-        (bounds, coord) => bounds.extend(coord as mapboxgl.LngLatLike),
-        new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]),
-      );
+    const coordinates = collectCoords(processedGeoJSON);
+    if (coordinates.length === 0) return;
 
-      const expandFactor = 1; // Adjust this factor if needed
-      const southWest = bounds.getSouthWest();
-      const northEast = bounds.getNorthEast();
+    const bounds = coordinates.reduce(
+      (b, coord) => b.extend(coord as mapboxgl.LngLatLike),
+      new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]),
+    );
 
-      const expandedBounds = new mapboxgl.LngLatBounds(
-        [
-          southWest.lng - expandFactor * (northEast.lng - southWest.lng),
-          southWest.lat - expandFactor * (northEast.lat - southWest.lat),
-        ],
-        [
-          northEast.lng + expandFactor * (northEast.lng - southWest.lng),
-          northEast.lat + expandFactor * (northEast.lat - southWest.lat),
-        ],
-      );
+    const expandFactor = 1;
+    const southWest = bounds.getSouthWest();
+    const northEast = bounds.getNorthEast();
+    const expandedBounds = new mapboxgl.LngLatBounds(
+      [
+        southWest.lng - expandFactor * (northEast.lng - southWest.lng),
+        southWest.lat - expandFactor * (northEast.lat - southWest.lat),
+      ],
+      [
+        northEast.lng + expandFactor * (northEast.lng - southWest.lng),
+        northEast.lat + expandFactor * (northEast.lat - southWest.lat),
+      ],
+    );
 
-      // **Set expanded max bounds to prevent excessive panning**
-      map.current.setMaxBounds(expandedBounds);
+    m.setMaxBounds(expandedBounds);
 
-      setTimeout(() => {
-        if (!map.current) return;
-        map.current.resize();
-        map.current.fitBounds(bounds, { padding: 50, duration: 0 });
-      }, 100);
-    }
-  }, [processedGeoJSON, mapLoaded]);
+    setTimeout(() => {
+      if (!map.current) return;
+      map.current.resize();
+      map.current.fitBounds(bounds, { padding: 50, duration: 0 });
+    }, 100);
+  }, [processedGeoJSON, processedOriginalGeoJSON, mapLoaded]);
+
+  // Bounds fitting when an original underlay is present: fit to the original
+  // (stable) when it changes. Ignores blue-layer updates so dragging sliders
+  // doesn't reset the camera.
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !processedOriginalGeoJSON) return;
+
+    const coordinates = collectCoords(processedOriginalGeoJSON);
+    if (coordinates.length === 0) return;
+
+    const bounds = coordinates.reduce(
+      (b, coord) => b.extend(coord as mapboxgl.LngLatLike),
+      new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]),
+    );
+
+    const expandFactor = 2; // looser so the user can pan the transformed copy away
+    const southWest = bounds.getSouthWest();
+    const northEast = bounds.getNorthEast();
+    const expandedBounds = new mapboxgl.LngLatBounds(
+      [
+        southWest.lng - expandFactor * (northEast.lng - southWest.lng),
+        southWest.lat - expandFactor * (northEast.lat - southWest.lat),
+      ],
+      [
+        northEast.lng + expandFactor * (northEast.lng - southWest.lng),
+        northEast.lat + expandFactor * (northEast.lat - southWest.lat),
+      ],
+    );
+
+    const m = map.current;
+    m.setMaxBounds(expandedBounds);
+
+    setTimeout(() => {
+      if (!map.current) return;
+      map.current.resize();
+      map.current.fitBounds(bounds, { padding: 50, duration: 0 });
+    }, 100);
+  }, [processedOriginalGeoJSON, mapLoaded]);
 
   return (
     <div className="min-h-[40dvh] col-start-1 md:col-start-2 bg-slate-200 space-y-4 h-full flex flex-col">
