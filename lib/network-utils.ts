@@ -2,6 +2,41 @@ import type { NetworkData } from "./types";
 import proj4 from "proj4";
 import { FeatureCollection, Feature, Geometry } from "geojson";
 
+/** EPANET flow units that imply US customary lengths (feet). */
+const US_FLOW_UNITS = new Set(["CFS", "GPM", "MGD", "IMGD", "AFD"]);
+
+export type EpanetUnitSystem = "US" | "SI";
+
+/** Meters per native coordinate unit for a given unit system. EPANET's
+ *  [COORDINATES] block has no inherent unit, but projected networks are
+ *  typically in the same units as the flow setting implies (feet for US,
+ *  meters for SI). */
+export const METERS_PER_UNIT: Record<EpanetUnitSystem, number> = {
+  US: 0.3048,
+  SI: 1,
+};
+
+/** Inspect the [OPTIONS] section of an INP file and return the unit system.
+ *  Defaults to "SI" if not declared. */
+export function detectEpanetUnits(inp: string): EpanetUnitSystem {
+  const lines = inp.split("\n");
+  let inOptions = false;
+  for (const raw of lines) {
+    const line = raw.split(";")[0].trim();
+    if (!line) continue;
+    if (line.startsWith("[")) {
+      inOptions = line.toUpperCase() === "[OPTIONS]";
+      continue;
+    }
+    if (!inOptions) continue;
+    const parts = line.split(/\s+/);
+    if (parts.length >= 2 && parts[0].toUpperCase() === "UNITS") {
+      return US_FLOW_UNITS.has(parts[1].toUpperCase()) ? "US" : "SI";
+    }
+  }
+  return "SI";
+}
+
 // Local type definitions for the EPANET conversion function
 type EpanetGeoJSON = FeatureCollection;
 type EpanetFeature = Feature;

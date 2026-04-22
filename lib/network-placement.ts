@@ -13,8 +13,9 @@ export interface LatLng {
 /**
  * Shift a NetworkData so that its native center maps to `anchor` in lat/lng
  * space. For already-lat/lng networks this is a pure translation. For
- * projected networks (assumed meters), native deltas are converted to degrees
- * using a local tangent-plane approximation around the anchor.
+ * projected networks, native deltas are scaled by `metersPerUnit` (1 for SI,
+ * 0.3048 for US customary / feet) and then converted to degrees using a local
+ * tangent-plane approximation around the anchor.
  *
  * Returns network data whose coordinates are in degrees (lng, lat).
  */
@@ -23,6 +24,7 @@ export function placeNetworkAtLatLng(
   anchor: LatLng,
   isLatLng: boolean,
   nativeCenter: [number, number],
+  metersPerUnit: number = 1,
 ): NetworkData {
   const [cx, cy] = nativeCenter;
   const cosLat = Math.cos((anchor.lat * Math.PI) / 180);
@@ -33,8 +35,8 @@ export function placeNetworkAtLatLng(
       return [anchor.lng + (x - cx), anchor.lat + (y - cy)];
     }
     return [
-      anchor.lng + (x - cx) / (METERS_PER_DEGREE * safeCos),
-      anchor.lat + (y - cy) / METERS_PER_DEGREE,
+      anchor.lng + ((x - cx) * metersPerUnit) / (METERS_PER_DEGREE * safeCos),
+      anchor.lat + ((y - cy) * metersPerUnit) / METERS_PER_DEGREE,
     ];
   };
 

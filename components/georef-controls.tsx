@@ -22,6 +22,7 @@ interface GeorefControlsProps {
   anchor: LatLng | null;
   params: TransformParams;
   canDownload: boolean;
+  units: "US" | "SI" | null;
   onGeocodeSelect: (result: GeocodeResult) => void;
   onPlaceAtMapCenter: () => void;
   onReset: () => void;
@@ -32,6 +33,7 @@ export function GeorefControls({
   anchor,
   params,
   canDownload,
+  units,
   onGeocodeSelect,
   onPlaceAtMapCenter,
   onReset,
@@ -72,6 +74,14 @@ export function GeorefControls({
       </div>
 
       <div className="rounded-md border border-gray-200 bg-gray-50 p-3 text-xs space-y-1">
+        {units && (
+          <div className="flex justify-between">
+            <span className="text-gray-500">Units</span>
+            <span className="font-mono text-gray-800">
+              {units === "US" ? "US customary (feet)" : "SI (meters)"}
+            </span>
+          </div>
+        )}
         <div className="flex justify-between">
           <span className="text-gray-500">Anchor</span>
           <span className="font-mono text-gray-800">

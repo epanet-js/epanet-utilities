@@ -9,8 +9,11 @@ import { GeorefMap, type GeorefMapHandle } from "@/components/georef-map";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
 import {
+  detectEpanetUnits,
+  METERS_PER_UNIT,
   parseINPFile,
   updateINPWithReprojectedData,
+  type EpanetUnitSystem,
 } from "@/lib/network-utils";
 import {
   applyNetworkDataToGeoJson,
@@ -41,6 +44,8 @@ interface LoadedFile {
   bbox: Bbox;
   nativeCenter: [number, number];
   isLatLng: boolean;
+  units: EpanetUnitSystem;
+  metersPerUnit: number;
   bboxSizeMeters: { widthMeters: number; heightMeters: number };
 }
 
@@ -55,11 +60,15 @@ function deriveBboxSizeMeters(
   bbox: Bbox,
   isLatLng: boolean,
   centerLat: number,
+  metersPerUnit: number,
 ): { widthMeters: number; heightMeters: number } {
   const widthNative = bbox.maxX - bbox.minX;
   const heightNative = bbox.maxY - bbox.minY;
   if (!isLatLng) {
-    return { widthMeters: widthNative, heightMeters: heightNative };
+    return {
+      widthMeters: widthNative * metersPerUnit,
+      heightMeters: heightNative * metersPerUnit,
+    };
   }
   const cosLat = Math.cos((centerLat * Math.PI) / 180);
   return {
@@ -75,13 +84,22 @@ function buildLoaded(
   const bbox = computeBbox(networkData);
   const nativeCenter = bboxCenter(bbox);
   const isLatLng = isLikelyLatLng(epanetGeoJson.geojson);
-  const bboxSizeMeters = deriveBboxSizeMeters(bbox, isLatLng, nativeCenter[1]);
+  const units = detectEpanetUnits(networkData.inp);
+  const metersPerUnit = METERS_PER_UNIT[units];
+  const bboxSizeMeters = deriveBboxSizeMeters(
+    bbox,
+    isLatLng,
+    nativeCenter[1],
+    metersPerUnit,
+  );
   return {
     networkData,
     epanetGeoJson,
     bbox,
     nativeCenter,
     isLatLng,
+    units,
+    metersPerUnit,
     bboxSizeMeters,
   };
 }
@@ -133,6 +151,7 @@ export default function GeoreferencePage() {
           anchor,
           true,
           next.nativeCenter,
+          next.metersPerUnit,
         );
         setPlaced({
           placedNd,
@@ -165,6 +184,7 @@ export default function GeoreferencePage() {
         anchor,
         loaded.isLatLng,
         loaded.nativeCenter,
+        loaded.metersPerUnit,
       );
       setPlaced({
         placedNd,
@@ -283,6 +303,7 @@ export default function GeoreferencePage() {
                 anchor={placed?.anchor ?? null}
                 params={params}
                 canDownload={!!placed}
+                units={loaded.units}
                 onGeocodeSelect={handleGeocodeSelect}
                 onPlaceAtMapCenter={handlePlaceAtMapCenter}
                 onReset={handleReset}
