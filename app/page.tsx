@@ -8,6 +8,7 @@ import {
   Database,
   AudioLines,
   Move3d,
+  MapPin,
 } from "lucide-react";
 import { AppHeader } from "@/components/app-header";
 import { Footer } from "@/components/footer";
@@ -56,6 +57,16 @@ const utilities: Utility[] = [
     type: "internal",
     icon: <Move3d className="h-6 w-6" />,
     color: "from-purple-500 to-pink-500",
+  },
+  {
+    id: "georeference",
+    title: "Georeference Network",
+    description:
+      "Drop an INP onto a real-world basemap and drag, scale, and rotate it to fit the ground.",
+    link: "/georeference",
+    type: "internal",
+    icon: <MapPin className="h-6 w-6" />,
+    color: "from-emerald-500 to-teal-500",
   },
   {
     id: "fire-flow",
