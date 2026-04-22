@@ -51,8 +51,7 @@ const utilities: Utility[] = [
   {
     id: "transform",
     title: "Network Transform",
-    description:
-      "Scale, translate, and rotate an EPANET network with a live map preview.",
+    description: "Scale, translate, and rotate an EPANET network.",
     link: "/transform",
     type: "internal",
     icon: <Move3d className="h-6 w-6" />,
@@ -62,7 +61,7 @@ const utilities: Utility[] = [
     id: "georeference",
     title: "Georeference Network",
     description:
-      "Drop an INP onto a real-world basemap and drag, scale, and rotate it to fit the ground.",
+      "Drop an INP onto a map and drag, scale, and rotate it to fit the ground.",
     link: "/georeference",
     type: "internal",
     icon: <MapPin className="h-6 w-6" />,
