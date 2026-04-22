@@ -2,30 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
-import { useState, useEffect } from "react";
-import { Sun, Moon, Home, Menu, X, Droplets, Github } from "lucide-react";
 
-interface AppHeaderProps {
-  title?: string;
-  githubUrl?: string;
-}
-
-export function AppHeader({
-  title = "EPANET Utilities",
-  githubUrl = "https://github.com/modelcreate/epanet-utilities",
-}: AppHeaderProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+export function AppHeader() {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
-
-  // Dark mode switch logic
-  const { setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <header className="col-span-2 bg-white/80 backdrop-blur-sm border-b border-gray-300 z-50 relative">

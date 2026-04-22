@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { ProjectionInput } from "./projection-input";
 import type { Projection } from "@/lib/types";
 import {

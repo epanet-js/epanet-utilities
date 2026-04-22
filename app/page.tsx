@@ -8,7 +8,6 @@ import {
   Database,
   AudioLines,
 } from "lucide-react";
-import { Layers } from "lucide-react";
 import { AppHeader } from "@/components/app-header";
 import { Footer } from "@/components/footer";
 

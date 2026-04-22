@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { IteratingLogoIcon, LogoIconAndWordmarkIcon } from "@/components/app-header";
 import { useState } from "react";
 
@@ -65,9 +66,9 @@ export function Footer() {
       <div className="container max-w-5xl px-4 md:px-6">
         <div className="py-12 sm:py-16 grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-4 space-y-6 lg:pr-12">
-            <a href="/" className="block">
+            <Link href="/" className="block">
               <LogoIconAndWordmarkIcon negative={true} size={140} />
-            </a>
+            </Link>
             <div className="space-y-4">
               <div className="space-y-2">
                 <h3 className="text-xl font-bold tracking-tighter text-white">
