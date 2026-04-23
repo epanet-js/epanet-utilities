@@ -9,7 +9,6 @@ import {
   metersToDegrees,
   rotateNetwork,
   scaleNetwork,
-  shiftToLatLngWithBaseline,
   translateNetwork,
 } from "../network-transform";
 
@@ -238,45 +237,5 @@ describe("applyTransform", () => {
     );
     expect(out.coordinates.A[0]).toBeCloseTo(11, 6);
     expect(out.coordinates.A[1]).toBeCloseTo(21, 6);
-  });
-});
-
-describe("shiftToLatLngWithBaseline", () => {
-  it("applies a fixed baseline shift to Points and LineStrings", () => {
-    const fc = {
-      type: "FeatureCollection",
-      features: [
-        {
-          type: "Feature",
-          geometry: { type: "Point", coordinates: [111320, 222640] },
-          properties: { type: "Node", id: "A" },
-        },
-        {
-          type: "Feature",
-          geometry: {
-            type: "LineString",
-            coordinates: [
-              [0, 0],
-              [111320, 0],
-            ],
-          },
-          properties: { type: "Link", id: "L1" },
-        },
-      ],
-    } as const;
-    const out = shiftToLatLngWithBaseline(
-      fc as unknown as Parameters<typeof shiftToLatLngWithBaseline>[0],
-      0,
-      0,
-    );
-    const pt = out.features[0].geometry as unknown as {
-      coordinates: [number, number];
-    };
-    const ls = out.features[1].geometry as unknown as {
-      coordinates: [number, number][];
-    };
-    expect(pt.coordinates[0]).toBeCloseTo(1, 9);
-    expect(pt.coordinates[1]).toBeCloseTo(2, 9);
-    expect(ls.coordinates[1][0]).toBeCloseTo(1, 9);
   });
 });

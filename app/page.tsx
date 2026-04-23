@@ -7,7 +7,6 @@ import {
   Flame,
   Database,
   AudioLines,
-  Move3d,
   MapPin,
 } from "lucide-react";
 import { AppHeader } from "@/components/app-header";
@@ -47,15 +46,6 @@ const utilities: Utility[] = [
     type: "internal",
     icon: <Database className="h-6 w-6" />,
     color: "from-orange-500 to-amber-500",
-  },
-  {
-    id: "transform",
-    title: "Network Transform",
-    description: "Scale, translate, and rotate an EPANET network.",
-    link: "/transform",
-    type: "internal",
-    icon: <Move3d className="h-6 w-6" />,
-    color: "from-purple-500 to-pink-500",
   },
   {
     id: "georeference",

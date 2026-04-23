@@ -1,4 +1,3 @@
-import type { FeatureCollection } from "geojson";
 import type { NetworkData } from "./types";
 
 export interface TransformParams {
@@ -114,52 +113,6 @@ export function metersToDegrees(
   return {
     dxDeg: dxMeters / (METERS_PER_DEGREE * safeCos),
     dyDeg: dyMeters / METERS_PER_DEGREE,
-  };
-}
-
-/**
- * Shifts a FeatureCollection from projected meters to approximate lat/lng,
- * using a fixed baseline (minX, minY) so that multiple collections share the
- * same reference frame. Unlike approximateReprojectToLatLngSingle, this does
- * NOT derive the baseline from the input — callers supply it. This lets an
- * "original" and a moving "transformed" copy stay visually aligned as the
- * transformed one is edited.
- */
-export function shiftToLatLngWithBaseline(
-  fc: FeatureCollection,
-  baselineMinX: number,
-  baselineMinY: number,
-): FeatureCollection {
-  const shift = ([x, y]: [number, number]): [number, number] => [
-    (x - baselineMinX) / METERS_PER_DEGREE,
-    (y - baselineMinY) / METERS_PER_DEGREE,
-  ];
-  return {
-    ...fc,
-    features: fc.features.map((f) => {
-      if (!f.geometry) return f;
-      if (f.geometry.type === "Point") {
-        return {
-          ...f,
-          geometry: {
-            ...f.geometry,
-            coordinates: shift(f.geometry.coordinates as [number, number]),
-          },
-        };
-      }
-      if (f.geometry.type === "LineString") {
-        return {
-          ...f,
-          geometry: {
-            ...f.geometry,
-            coordinates: (f.geometry.coordinates as [number, number][]).map(
-              shift,
-            ),
-          },
-        };
-      }
-      return f;
-    }),
   };
 }
 
